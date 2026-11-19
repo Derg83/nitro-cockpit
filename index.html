@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2B1740">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nitro Cockpit">
+<title>Nitro Umzug · Cockpit</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --brand:#2B1740; --brand2:#3d2260; --accent:#D62839; --bg:#f4f3f7; --card:#fff; --ink:#1c1626; --ink2:#5d566b; --ink3:#8f88a0;
+  --line:#e6e3ed; --ok:#1f8a5b; --warn:#c77700; --bad:#D62839;
+  --c1:#2B1740; --c2:#7a5bb5; --c3:#D62839; --c4:#e7a33e; --c5:#3a9e8f; --c6:#b9b2c9;
+  --r:14px; --sh:0 1px 2px rgba(28,22,38,.05),0 4px 16px rgba(28,22,38,.06);
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--brand2)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Kopf */
+.top{background:var(--brand);color:#fff;padding:14px 20px calc(14px) ;padding-top:calc(14px + env(safe-area-inset-top));position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.top-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{display:flex;flex-direction:column;align-items:center;line-height:1;margin-right:8px}
+.logo b{font-size:22px;letter-spacing:.06em;font-weight:900}
+.logo span{display:flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:.32em;font-weight:700;margin-top:3px}
+.logo span:before,.logo span:after{content:"";width:14px;height:2px;background:var(--accent)}
+.ttl{font-size:13px;color:#cfc6e2;border-left:1px solid rgba(255,255,255,.18);padding-left:14px}
+.ttl b{display:block;color:#fff;font-size:15px}
+.grow{flex:1}
+.pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 12px;font-size:12.5px;color:#fff;cursor:pointer}
+.pill .d{width:8px;height:8px;border-radius:50%;background:#8a82a0}
+.pill .d.ok{background:#3ddc97;box-shadow:0 0 0 3px rgba(61,220,151,.2)}
+.pill .d.busy{background:#f6c445;animation:pulse 1s infinite}
+.pill .d.err{background:#ff6b6b}
+@keyframes pulse{50%{opacity:.35}}
+.seg{display:inline-flex;background:rgba(255,255,255,.1);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;color:#d9d1ea;padding:6px 11px;border-radius:8px;font-size:12.5px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--brand)}
+.iconbtn{border:0;background:rgba(255,255,255,.1);color:#fff;border-radius:10px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer}
+
+main{max-width:1320px;margin:0 auto;padding:20px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:26px 2px 12px;gap:10px}
+.sec-h h2{font-size:15px;margin:0;letter-spacing:.01em}
+.sec-h small{color:var(--ink3);font-size:12px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g2{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.g2e{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:1050px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.g2,.g2e,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px;min-width:0}
+.card h3{margin:0 0 2px;font-size:13.5px}
+.card .sub{color:var(--ink3);font-size:12px;margin-bottom:12px}
+.kpi{position:relative;overflow:hidden}
+.kpi .l{color:var(--ink2);font-size:12px;font-weight:600;letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+.kpi .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .f{font-size:12px;color:var(--ink3);margin-top:4px}
+.kpi .f b{font-weight:700}
+.kpi.hl{background:var(--brand);color:#fff;border-color:var(--brand)}
+.kpi.hl .l,.kpi.hl .f{color:#cfc6e2}
+.up{color:var(--ok)}.down{color:var(--bad)}
+.kpi .bar{height:4px;background:var(--line);border-radius:4px;margin-top:10px;overflow:hidden}
+.kpi .bar i{display:block;height:100%;background:var(--ok);border-radius:4px}
+.kpi.hl .bar{background:rgba(255,255,255,.18)}
+.chartbox{position:relative;height:270px}
+.chartbox.sm{height:220px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--ink3);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 8px;border-bottom:1px solid #f0eef4;vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl{overflow-x:auto}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#f0edf6;color:var(--brand2);white-space:nowrap}
+.tag.ok{background:#e4f5ed;color:var(--ok)}.tag.warn{background:#fdf1dc;color:var(--warn)}.tag.bad{background:#fde7ea;color:var(--bad)}
+.muted{color:var(--ink3)}
+.empty{color:var(--ink3);font-size:13px;padding:18px 4px;text-align:center}
+.mail{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid #f0eef4;text-decoration:none;color:inherit}
+.mail:last-child{border-bottom:0}
+.mail .av{width:34px;height:34px;border-radius:50%;background:#efeaf7;color:var(--brand2);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.mail .av.web{background:#fde7ea;color:var(--accent)}
+.mail .t{flex:1;min-width:0}
+.mail .t b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mail .t span{display:block;font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mail .t small{color:var(--ink3);font-size:11.5px}
+.mail .when{font-size:11.5px;color:var(--ink3);white-space:nowrap}
+.mail.unread .t b:after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:middle}
+.connect{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#fff;border:1px dashed #cfc6e2;border-radius:var(--r);padding:16px 18px}
+.connect p{margin:0;color:var(--ink2);max-width:640px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;background:var(--brand);color:#fff}
+.btn.sec{background:#efeaf7;color:var(--brand)}
+.btn.red{background:var(--accent)}
+@media (max-width:700px){.top{position:static}.ttl{display:none}.top-in{gap:10px}main{padding:14px}.kpi .v{font-size:22px}}
+.foot{color:var(--ink3);font-size:12px;text-align:center;margin:30px 0 10px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* Einstellungen */
+.modal{position:fixed;inset:0;background:rgba(20,12,32,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.open{display:flex}
+.modal form{background:#fff;border-radius:16px;max-width:520px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal h3{margin:0 0 4px}
+.modal label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin:14px 0 5px}
+.modal input{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#faf9fc}
+.modal .hint{font-size:12px;color:var(--ink3);margin-top:6px;line-height:1.45}
+.modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:60}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.skel{color:transparent!important;background:linear-gradient(90deg,#eeebf3,#f7f5fa,#eeebf3);background-size:200% 100%;animation:sk 1.2s infinite;border-radius:6px}
+@keyframes sk{to{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="logo" aria-label="Nitro Umzug"><b>NITRO</b><span>UMZUG</span></div>
+    <div class="ttl"><b>Cockpit</b><span id="nowTxt">–</span></div>
+    <div class="grow"></div>
+    <div class="seg" id="range" role="group" aria-label="Zeitraum">
+      <button data-r="30" aria-pressed="false">30 Tage</button>
+      <button data-r="90" aria-pressed="false">90 Tage</button>
+      <button data-r="365" aria-pressed="false">12 Monate</button>
+      <button data-r="0" aria-pressed="true">Alles</button>
+    </div>
+    <div class="pills">
+      <button class="pill" id="pZettel" title="Daten aus der Zettel-App (GitHub)"><span class="d" id="dZettel"></span><span id="tZettel">Zettel</span></button>
+      <button class="pill" id="pGmail" title="Gmail nitroumzug@gmail.com"><span class="d" id="dGmail"></span><span id="tGmail">Gmail</span></button>
+      <button class="iconbtn" id="refBtn" aria-label="Jetzt aktualisieren" title="Jetzt aktualisieren">⟳</button>
+      <button class="iconbtn" id="setBtn" aria-label="Einstellungen" title="Einstellungen">⚙</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="connectBox"></div>
+
+  <div class="sec-h"><h2>Finanzen</h2><small id="rangeTxt">Gesamter Zeitraum</small></div>
+  <div class="grid kpis">
+    <div class="card kpi hl"><div class="l">Umsatz</div><div class="v" id="kUmsatz">–</div><div class="f" id="fUmsatz"></div><div class="bar"><i id="bUmsatz" style="width:0"></i></div></div>
+    <div class="card kpi"><div class="l">Bezahlt</div><div class="v up" id="kBezahlt">–</div><div class="f" id="fBezahlt"></div></div>
+    <div class="card kpi"><div class="l">Offene Forderungen</div><div class="v" id="kOffen">–</div><div class="f" id="fOffen"></div></div>
+    <div class="card kpi"><div class="l">Noch abzurechnen</div><div class="v" id="kAbr">–</div><div class="f" id="fAbr"></div></div>
+  </div>
+  <div class="grid kpis" style="margin-top:14px">
+    <div class="card kpi"><div class="l">Einsätze</div><div class="v" id="kEins">–</div><div class="f" id="fEins"></div></div>
+    <div class="card kpi"><div class="l">Arbeitsstunden</div><div class="v" id="kStd">–</div><div class="f" id="fStd"></div></div>
+    <div class="card kpi"><div class="l">Ø Umsatz pro Einsatz</div><div class="v" id="kAvg">–</div><div class="f" id="fAvg"></div></div>
+    <div class="card kpi"><div class="l">Ø Erlös pro Arbeitsstunde</div><div class="v" id="kEph">–</div><div class="f" id="fEph"></div></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Umsatz pro Monat</h3><div class="sub">Nach Zahlungsstatus</div><div class="chartbox"><canvas id="chMonat" aria-label="Umsatz pro Monat"></canvas></div></div>
+    <div class="card"><h3>Umsatz nach Kunde</h3><div class="sub">Anteil am Umsatz im Zeitraum</div><div class="chartbox"><canvas id="chKunde" aria-label="Umsatz nach Kunde"></canvas></div></div>
+  </div>
+
+  <div class="sec-h"><h2>Einsätze &amp; Team</h2><small>Aus den Zetteln</small></div>
+  <div class="grid g3">
+    <div class="card"><h3>Stunden pro Mitarbeiter</h3><div class="sub">Gearbeitete Stunden im Zeitraum</div><div class="chartbox sm"><canvas id="chMa"></canvas></div></div>
+    <div class="card"><h3>Einsätze pro Woche</h3><div class="sub">Anzahl Zettel je Kalenderwoche</div><div class="chartbox sm"><canvas id="chWoche"></canvas></div></div>
+    <div class="card"><h3>Einsätze nach Wochentag</h3><div class="sub">Wann gebucht wird</div><div class="chartbox sm"><canvas id="chWt"></canvas></div></div>
+  </div>
+
+  <div class="grid g2e" style="margin-top:14px">
+    <div class="card"><h3>Nächste Einsätze</h3><div class="sub">Offene Zettel ab heute</div><div class="tbl" id="tNext"></div></div>
+    <div class="card"><h3>Offene Forderungen</h3><div class="sub">Abgerechnet, aber noch nicht bezahlt</div><div class="tbl" id="tOffen"></div></div>
+  </div>
+
+  <div class="sec-h"><h2>Postfach</h2><small id="gmailTxt">nitroumzug@gmail.com</small></div>
+  <div class="grid kpis">
+    <div class="card kpi"><div class="l">Ungelesen im Posteingang</div><div class="v" id="gUnread">–</div><div class="f" id="gfUnread"></div></div>
+    <div class="card kpi"><div class="l">Website-Anfragen</div><div class="v" id="gWeb">–</div><div class="f" id="gfWeb">letzte 30 Tage</div></div>
+    <div class="card kpi"><div class="l">Mails von Kunden</div><div class="v" id="gKunde">–</div><div class="f" id="gfKunde">letzte 30 Tage</div></div>
+    <div class="card kpi"><div class="l">Wartet auf Antwort</div><div class="v" id="gWait">–</div><div class="f" id="gfWait">Kunden &amp; Anfragen</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Mail-Aktivität</h3><div class="sub">Eingang und Ausgang pro Tag, letzte 30 Tage</div><div class="chartbox"><canvas id="chMail"></canvas></div></div>
+    <div class="card"><h3>Wartet auf Antwort</h3><div class="sub">Letzte Nachricht kam vom Kunden</div><div id="lWait"></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Kunden-Übersicht</h3><div class="sub">Umsatz, Einsätze und letzter Mailkontakt</div><div class="tbl" id="tKunden"></div></div>
+    <div class="card"><h3>Neueste Kundenmails</h3><div class="sub">Von Partnerfirmen und über die Website</div><div id="lMails"></div></div>
+  </div>
+
+  <div class="foot">Daten: Nitro Zettel (GitHub, privat) · Gmail (nur lesend) · aktualisiert sich automatisch jede Minute, solange die Seite offen ist</div>
+</main>
+
+<div class="modal" id="setModal" role="dialog" aria-modal="true" aria-labelledby="setH">
+  <form id="setForm" autocomplete="off">
+    <h3 id="setH">Einstellungen</h3>
+    <div class="hint">Alles wird nur auf diesem Gerät gespeichert.</div>
+    <label for="sOwner">GitHub-Name</label><input id="sOwner" autocapitalize="off" spellcheck="false">
+    <label for="sRepo">Daten-Repo</label><input id="sRepo" autocapitalize="off" spellcheck="false">
+    <label for="sToken">GitHub-Zugangsschlüssel</label><input id="sToken" type="password" placeholder="github_pat_…" autocapitalize="off" spellcheck="false">
+    <div class="hint">Derselbe Schlüssel wie in der Zettel-App. Wenn du die Zettel-App auf diesem Gerät schon verbunden hast, ist er automatisch da.</div>
+    <label for="sClient">Google Client-ID (für Gmail)</label><input id="sClient" placeholder="….apps.googleusercontent.com" autocapitalize="off" spellcheck="false">
+    <div class="row"><button type="button" class="btn sec" id="setCancel">Abbrechen</button><button class="btn" type="submit">Speichern</button></div>
+  </form>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+"use strict";
+/* ---------- Konfiguration ---------- */
+const GOOGLE_CLIENT_ID = "";            // wird nach der Einrichtung fest eingetragen
+const ME = "nitroumzug@gmail.com";
+const POLL_MS = 60000;
+const LS = { zcfg:"nz_cfg", dcfg:"nd_cfg", cache:"nd_cache", mail:"nd_mail" };
+
+const $ = s => document.querySelector(s);
+const ls = { get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}} };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const eur = x => (x||0).toLocaleString("de-DE",{style:"currency",currency:"EUR"});
+const eur0 = x => (x||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+const n1 = x => (x||0).toLocaleString("de-DE",{maximumFractionDigits:1});
+const pct = x => (x||0).toLocaleString("de-DE",{style:"percent",maximumFractionDigits:0});
+const WT = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const MON = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("show"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("show"),2600); }
+
+let zcfg = ls.get(LS.zcfg, { owner:"Derg83", repo:"nitro-zettel-daten", token:"" });
+let dcfg = ls.get(LS.dcfg, { clientId:"" });
+let cache = ls.get(LS.cache, { auftraege:[], kunden:[], at:null });
+let mail = ls.get(LS.mail, { msgs:{}, unread:null, at:null });
+let range = 0;
+let gToken = null, gExp = 0, tokenClient = null;
+
+/* ---------- Zettel-Daten von GitHub ---------- */
+const b64dec = s => { const bin = atob(s.replace(/\n/g,"")); return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))); };
+async function ghFile(path){
+  const r = await fetch(`https://api.github.com/repos/${encodeURIComponent(zcfg.owner)}/${encodeURIComponent(zcfg.repo)}/contents/${path}?t=${Date.now()}`,
+    { cache:"no-store", headers:{ Authorization:"Bearer "+zcfg.token, Accept:"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28" } });
+  if(r.status === 404) return null;
+  if(r.status === 401 || r.status === 403) throw new Error("GitHub-Schlüssel ungültig");
+  if(!r.ok) throw new Error("GitHub " + r.status);
+  return JSON.parse(b64dec((await r.json()).content));
+}
+function dot(id, s, t){ $("#d"+id).className = "d " + s; if(t) $("#t"+id).textContent = t; }
+async function loadZettel(){
+  if(!zcfg.token){ dot("Zettel","err","Zettel: nicht verbunden"); return; }
+  dot("Zettel","busy");
+  try{
+    const [a, k] = await Promise.all([ghFile("data/auftraege.json"), ghFile("data/kunden.json")]);
+    cache = { auftraege:(a&&a.auftraege)||[], kunden:(k&&k.kunden)||[], at:new Date().toISOString() };
+    ls.set(LS.cache, cache);
+    dot("Zettel","ok","Zettel · " + hhmm(new Date()));
+  }catch(e){ dot("Zettel","err","Zettel: " + e.message); }
+}
+
+/* ---------- Gmail ---------- */
+function clientId(){ return GOOGLE_CLIENT_ID || dcfg.clientId || ""; }
+function initGoogle(){
+  if(tokenClient || !clientId() || !window.google?.accounts?.oauth2) return !!tokenClient;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId(), scope: "https://www.googleapis.com/auth/gmail.readonly", hint: ME,
+    callback: r => {
+      if(r.error){ dot("Gmail","err","Gmail: " + r.error); return; }
+      gToken = r.access_token; gExp = Date.now() + (r.expires_in - 120) * 1000;
+      ls.set("nd_gt", { t:gToken, e:gExp });
+      ls.set("nd_gok", true); renderConnect(); loadMail().then(renderAll);
+    }
+  });
+  return true;
+}
+function connectGmail(silent){
+  if(!clientId()){ openSet(); toast("Erst die Google Client-ID eintragen"); return; }
+  if(!initGoogle()){ setTimeout(() => connectGmail(silent), 400); return; }
+  tokenClient.requestAccessToken({ prompt: ls.get("nd_gok", false) ? "" : "consent" });
+}
+async function gapi(path){
+  const r = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/" + path, { headers:{ Authorization:"Bearer " + gToken } });
+  if(r.status === 401){ gToken = null; throw new Error("Anmeldung abgelaufen"); }
+  if(!r.ok) throw new Error("Gmail " + r.status);
+  return r.json();
+}
+async function listIds(q, max){
+  let ids = [], page = "";
+  do{
+    const j = await gapi(`messages?maxResults=100&q=${encodeURIComponent(q)}${page ? "&pageToken="+page : ""}`);
+    (j.messages||[]).forEach(m => ids.push(m));
+    page = j.nextPageToken || "";
+  }while(page && ids.length < max);
+  return ids.slice(0, max);
+}
+async function pool(items, n, fn){ const out=[]; let i=0; await Promise.all(Array.from({length:n}, async () => { while(i < items.length){ const k=i++; out[k] = await fn(items[k]); } })); return out; }
+const hdr = (m, name) => ((m.payload?.headers)||[]).find(h => h.name.toLowerCase() === name.toLowerCase())?.value || "";
+function addr(s){ const m = /<([^>]+)>/.exec(s); return (m ? m[1] : s).trim().toLowerCase(); }
+function dname(s){ const m = /^\s*"?([^"<]+?)"?\s*</.exec(s); return m ? m[1].trim() : addr(s); }
+async function loadMail(){
+  if(!gToken || Date.now() > gExp){
+    dot("Gmail","err", ls.get("nd_gok", false) ? "Gmail: tippen zum Anmelden" : "Gmail: nicht verbunden");
+    return;
+  }
+  dot("Gmail","busy");
+  try{
+    const ids = await listIds("newer_than:31d -in:spam -in:trash -category:promotions -category:social", 400);
+    const need = ids.filter(m => !mail.msgs[m.id]);
+    await pool(need, 8, async m => {
+      const j = await gapi(`messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject`);
+      mail.msgs[m.id] = { id:j.id, th:j.threadId, ts:+j.internalDate, from:hdr(j,"From"), to:hdr(j,"To"), subj:hdr(j,"Subject"), snip:j.snippet, labels:j.labelIds||[] };
+    });
+    // Ungelesen-Status der bekannten Mails auffrischen + alte entfernen
+    const keep = new Set(ids.map(m => m.id));
+    Object.keys(mail.msgs).forEach(id => { if(!keep.has(id)) delete mail.msgs[id]; });
+    const unread = await gapi(`messages?maxResults=100&q=${encodeURIComponent("in:inbox is:unread -category:promotions -category:social")}`);
+    const unreadIds = new Set((unread.messages||[]).map(m => m.id));
+    Object.values(mail.msgs).forEach(m => { const u = unreadIds.has(m.id); m.labels = m.labels.filter(l => l !== "UNREAD"); if(u) m.labels.push("UNREAD"); });
+    mail.unread = unread.resultSizeEstimate ?? unreadIds.size;
+    mail.at = new Date().toISOString(); ls.set(LS.mail, mail);
+    dot("Gmail","ok","Gmail · " + hhmm(new Date()));
+  }catch(e){ dot("Gmail","err", gToken ? "Gmail: " + e.message : "Gmail: tippen zum Anmelden"); }
+}
+
+/* ---------- Auswertung Zettel ---------- */
+const mins = (a,b) => { if(!a||!b) return 0; const [h1,m1]=a.split(":").map(Number),[h2,m2]=b.split(":").map(Number); let d=(h2*60+m2)-(h1*60+m1); if(d<0) d+=1440; return d; };
+const stdMin = a => (a.gruppen||[]).reduce((s,g)=>s+(g.mitarbeiter||[]).reduce((t,m)=>t+Math.max(0,mins(m.beginn,m.ende)-(+m.pause_min||0)),0),0);
+const schaetz = a => Math.round(((stdMin(a)/60)*(+a.satz||0) + (+a.fahrzeuge||0)*(+a.anfahrt||0))*100)/100;
+const betrag = a => (a.betrag !== "" && a.betrag != null) ? +a.betrag : schaetz(a);
+const live = () => (cache.auftraege||[]).filter(a => !a.geloescht);
+const kKey = s => String(s||"").toLowerCase().replace(/gmbh|&|co\.?|kg|umzüge|umzuege|möbeltransporte|[^a-z0-9äöüß]/g,"");
+const today = () => new Date().toISOString().slice(0,10);
+function inRange(a){ if(!range) return true; if(!a.datum) return false; const d = new Date(a.datum); return (Date.now() - d) / 864e5 <= range && d <= new Date(today()+"T23:59"); }
+function prevRange(a){ if(!range || !a.datum) return false; const age = (Date.now() - new Date(a.datum)) / 864e5; return age > range && age <= 2*range; }
+function art(a){ return a.bezahlt ? "bezahlt" : (a.status === "abgerechnet" || a.re_nr) ? "offen" : "abzurechnen"; }
+const past = a => a.datum && a.datum <= today();
+
+function kundeName(name){
+  const k = (cache.kunden||[]).find(x => kKey(x.name) === kKey(name));
+  return k ? k.name : name;
+}
+function kurz(name){ return String(name||"").replace(/\s*GmbH.*$/i,"").replace(/^Umzüge\s+/i,"").trim() || name; }
+
+/* ---------- Mail-Zuordnung ---------- */
+function domains(){
+  const map = new Map();
+  (cache.kunden||[]).forEach(k => {
+    const ds = new Set([...(k.domains||[]), ...(k.email ? [k.email.split("@")[1]] : [])].filter(Boolean).map(d => d.toLowerCase()));
+    ds.forEach(d => map.set(d, k));
+  });
+  return map;
+}
+function classify(m){
+  const f = addr(m.from);
+  if(/web3forms\.com$/.test(f.split("@")[1]||"") && /anfrage/i.test(m.subj)) return { typ:"web", kunde:null };
+  const out = f === ME;
+  const other = out ? addr(m.to.split(",")[0]||"") : f;
+  const k = domains().get((other.split("@")[1]||""));
+  return { typ: k ? "kunde" : "sonst", kunde:k, out };
+}
+
+/* ---------- Diagramme ---------- */
+const charts = {};
+Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+Chart.defaults.color = "#5d566b";
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.boxHeight = 10;
+Chart.defaults.plugins.tooltip.backgroundColor = "#1c1626";
+Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.maintainAspectRatio = false;
+const C = ["#2B1740","#7a5bb5","#D62839","#e7a33e","#3a9e8f","#b9b2c9","#5b7fc7"];
+function chart(id, cfg){ if(charts[id]){ charts[id].data = cfg.data; charts[id].options = cfg.options || {}; charts[id].update(); return; } charts[id] = new Chart($("#"+id), cfg); }
+const gridY = { grid:{ color:"#f0eef4" }, border:{ display:false } };
+const gridX = { grid:{ display:false }, border:{ display:false } };
+
+/* ---------- Rendern ---------- */
+function setKpi(id, v, f){ $("#k"+id).textContent = v; if(f !== undefined) $("#f"+id).innerHTML = f; }
+function trend(cur, prev, fmt){
+  if(!range || !prev) return "";
+  const d = (cur - prev) / prev; const cls = d >= 0 ? "up" : "down";
+  return ` · <b class="${cls}">${d>=0?"▲":"▼"} ${pct(Math.abs(d))}</b> ggü. Vorzeitraum`;
+}
+function renderZettel(){
+  const all = live(), rs = all.filter(inRange), done = rs.filter(past), prev = all.filter(prevRange);
+  const sum = arr => arr.reduce((s,a)=>s+betrag(a),0);
+  const um = sum(done), umP = sum(prev.filter(past));
+  const bez = sum(done.filter(a => art(a) === "bezahlt"));
+  const off = all.filter(a => art(a) === "offen"), offS = sum(off);
+  const abr = all.filter(a => art(a) === "abzurechnen" && past(a)), abrS = sum(abr);
+  const std = done.reduce((s,a)=>s+stdMin(a),0)/60, stdP = prev.filter(past).reduce((s,a)=>s+stdMin(a),0)/60;
+
+  $("#rangeTxt").textContent = range ? `Letzte ${range} Tage` : "Gesamter Zeitraum";
+  setKpi("Umsatz", eur(um), `${done.length} abgeschlossene Einsätze${trend(um, umP)}`);
+  $("#bUmsatz").style.width = um ? (bez/um*100).toFixed(1)+"%" : "0";
+  setKpi("Bezahlt", eur(bez), um ? `${pct(bez/um)} vom Umsatz eingegangen` : "");
+  setKpi("Offen", eur(offS), off.length ? `${off.length} Rechnung${off.length>1?"en":""} offen` : "Alles bezahlt ✓");
+  $("#kOffen").className = "v" + (offS ? " down" : "");
+  setKpi("Abr", eur(abrS), abr.length ? `${abr.length} ${abr.length>1?"Einsätze":"Einsatz"} ohne Rechnung` : "Alles abgerechnet ✓");
+  setKpi("Eins", String(done.length), `${rs.length - done.length} geplant${trend(done.length, prev.filter(past).length)}`);
+  setKpi("Std", n1(std) + " h", `${done.reduce((s,a)=>s+(a.gruppen||[]).reduce((t,g)=>t+(g.mitarbeiter||[]).length,0),0)} Mann-Einsätze${trend(std, stdP)}`);
+  setKpi("Avg", done.length ? eur(um/done.length) : "–", done.length ? `Ø ${n1(std/done.length)} Arbeitsstunden je Einsatz` : "");
+  setKpi("Eph", std ? eur(um/std) : "–", "inkl. Anfahrt, pro Mann-Stunde");
+
+  // Monat
+  const months = new Map();
+  const src = (range ? done : all.filter(past));
+  src.forEach(a => { const k = a.datum.slice(0,7); if(!months.has(k)) months.set(k,{bezahlt:0,offen:0,abzurechnen:0}); months.get(k)[art(a)] += betrag(a); });
+  const mk = [...months.keys()].sort();
+  chart("chMonat", { type:"bar", data:{ labels: mk.map(k => MON[+k.slice(5)-1] + " " + k.slice(2,4)),
+    datasets:[
+      { label:"Bezahlt", data: mk.map(k=>months.get(k).bezahlt), backgroundColor:"#2B1740", borderRadius:6, stack:"s" },
+      { label:"Offen", data: mk.map(k=>months.get(k).offen), backgroundColor:"#D62839", borderRadius:6, stack:"s" },
+      { label:"Noch abzurechnen", data: mk.map(k=>months.get(k).abzurechnen), backgroundColor:"#e7a33e", borderRadius:6, stack:"s" } ] },
+    options:{ scales:{ x:gridX, y:{ ...gridY, ticks:{ callback:v => eur0(v) } } }, plugins:{ legend:{ position:"bottom" }, tooltip:{ callbacks:{ label:c => ` ${c.dataset.label}: ${eur(c.raw)}`, footer:it => "Summe: " + eur(it.reduce((s,c)=>s+c.raw,0)) } } } } });
+
+  // Kunde
+  const kd = new Map(); done.forEach(a => { const n = kurz(kundeName(a.kunde)) || "Ohne Kunde"; kd.set(n, (kd.get(n)||0) + betrag(a)); });
+  const ke = [...kd.entries()].sort((a,b)=>b[1]-a[1]);
+  chart("chKunde", { type:"doughnut", data:{ labels: ke.map(e=>e[0]), datasets:[{ data: ke.map(e=>e[1]), backgroundColor:C, borderWidth:2, borderColor:"#fff" }] },
+    options:{ cutout:"64%", plugins:{ legend:{ position:"bottom" }, tooltip:{ callbacks:{ label:c => ` ${c.label}: ${eur(c.raw)} (${pct(c.raw/um)})` } } } } });
+
+  // Mitarbeiter
+  const ma = new Map(); done.forEach(a => (a.gruppen||[]).forEach(g => (g.mitarbeiter||[]).forEach(m => { const n = m.echtname || "ohne Namen"; ma.set(n, (ma.get(n)||0) + Math.max(0, mins(m.beginn,m.ende) - (+m.pause_min||0))/60); })));
+  const me = [...ma.entries()].sort((a,b)=>b[1]-a[1]);
+  chart("chMa", { type:"bar", data:{ labels: me.map(e=>e[0]), datasets:[{ label:"Stunden", data: me.map(e=>Math.round(e[1]*100)/100), backgroundColor: me.map(e => e[0]==="ohne Namen" ? "#b9b2c9" : "#7a5bb5"), borderRadius:6 }] },
+    options:{ indexAxis:"y", scales:{ x:{ ...gridY, ticks:{ callback:v => v + " h" } }, y:gridX }, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:c => ` ${n1(c.raw)} Std.` } } } } });
+
+  // Woche
+  const wk = new Map(); src.forEach(a => { const k = isoWeek(new Date(a.datum)); wk.set(k, (wk.get(k)||0) + 1); });
+  const wks = [...wk.keys()].sort();
+  if(wks.length > 1){ const d = new Date(src.map(a=>a.datum).sort()[0]); const end = isoWeek(new Date()); const full = []; let k; do{ k = isoWeek(d); if(!full.includes(k)) full.push(k); d.setDate(d.getDate()+7); }while(k < end && full.length < 120); if(!full.includes(end)) full.push(end); wks.splice(0, wks.length, ...full); }
+  chart("chWoche", { type:"line", data:{ labels: wks.map(k => "KW " + +k.slice(6)), datasets:[{ label:"Einsätze", data: wks.map(k=>wk.get(k)||0), borderColor:"#2B1740", backgroundColor:"rgba(43,23,64,.08)", fill:true, cubicInterpolationMode:"monotone", pointRadius:3, pointBackgroundColor:"#D62839" }] },
+    options:{ scales:{ x:gridX, y:{ ...gridY, beginAtZero:true, ticks:{ precision:0 } } }, plugins:{ legend:{ display:false } } } });
+
+  // Wochentag
+  const wt = [0,0,0,0,0,0,0]; src.forEach(a => wt[new Date(a.datum).getDay()]++);
+  const ord = [1,2,3,4,5,6,0];
+  chart("chWt", { type:"bar", data:{ labels: ord.map(i=>WT[i]), datasets:[{ label:"Einsätze", data: ord.map(i=>wt[i]), backgroundColor: ord.map(i => i===6 ? "#D62839" : "#2B1740"), borderRadius:6 }] },
+    options:{ scales:{ x:gridX, y:{ ...gridY, beginAtZero:true, ticks:{ precision:0 } } }, plugins:{ legend:{ display:false } } } });
+
+  // Nächste Einsätze
+  const next = all.filter(a => a.datum && a.datum >= today() && a.status !== "abgerechnet").sort((a,b)=>(a.datum+a.beginn).localeCompare(b.datum+b.beginn)).slice(0,8);
+  $("#tNext").innerHTML = next.length ? `<table><thead><tr><th>Datum</th><th>Kunde</th><th>Team</th><th class="n">Mann</th></tr></thead><tbody>${next.map(a => {
+    const d = new Date(a.datum); const namen = (a.gruppen||[]).flatMap(g=>(g.mitarbeiter||[]).map(m=>m.echtname).filter(Boolean));
+    const isToday = a.datum === today();
+    return `<tr><td>${isToday ? '<span class="tag bad">Heute</span> ' : ""}${WT[d.getDay()]}, ${d.getDate()}.${d.getMonth()+1}. <span class="muted">${esc(a.beginn||"")}</span></td><td>${esc(kurz(kundeName(a.kunde)))}<div class="muted">${esc(a.ort||"")}</div></td><td>${namen.length ? esc(namen.join(", ")) : '<span class="tag warn">Team fehlt</span>'}</td><td class="n">${a.mann || (a.gruppen||[]).reduce((s,g)=>s+(g.mitarbeiter||[]).length,0)}</td></tr>`;
+  }).join("")}</tbody></table>` : `<div class="empty">Keine geplanten Einsätze</div>`;
+
+  // Offene Forderungen
+  const offL = [...off].sort((a,b)=>(a.datum||"").localeCompare(b.datum||""));
+  $("#tOffen").innerHTML = offL.length ? `<table><thead><tr><th>Rechnung</th><th>Kunde</th><th class="n">Alter</th><th class="n">Betrag</th></tr></thead><tbody>${offL.map(a => {
+    const ref = a.re_datum ? new Date(a.re_datum.split(".").reverse().join("-")) : new Date(a.datum);
+    const age = Math.max(0, Math.floor((Date.now() - ref) / 864e5));
+    const cls = age > 30 ? "bad" : age > 14 ? "warn" : "ok";
+    return `<tr><td>${esc(a.re_nr || "–")}<div class="muted">Einsatz ${esc(fmtD(a.datum))}</div></td><td>${esc(kurz(kundeName(a.kunde)))}</td><td class="n"><span class="tag ${cls}">${age} Tage</span></td><td class="n"><b>${eur(betrag(a))}</b></td></tr>`;
+  }).join("")}<tr><td colspan="3"><b>Summe</b></td><td class="n"><b>${eur(offS)}</b></td></tr></tbody></table>` : `<div class="empty">Keine offenen Rechnungen – alles bezahlt ✓</div>`;
+}
+
+function renderMail(){
+  const msgs = Object.values(mail.msgs||{}).sort((a,b)=>b.ts-a.ts);
+  const ok = !!mail.at;
+  const c = msgs.map(m => ({ ...m, ...classify(m) }));
+  const web = c.filter(m => m.typ === "web"), kun = c.filter(m => m.typ === "kunde" && !m.out);
+  // Wartet auf Antwort: Threads, deren letzte Nachricht von Kunde/Website kommt
+  const th = new Map(); c.forEach(m => { const t = th.get(m.th); if(!t || m.ts > t.ts) th.set(m.th, m); });
+  const wait = [...th.values()].filter(m => (m.typ === "kunde" && !m.out) || m.typ === "web").sort((a,b)=>b.ts-a.ts);
+
+  $("#gUnread").textContent = ok ? String(mail.unread ?? "–") : "–";
+  $("#gfUnread").textContent = ok ? `Stand ${hhmm(new Date(mail.at))}` : "Gmail verbinden";
+  $("#gWeb").textContent = ok ? String(web.length) : "–";
+  $("#gKunde").textContent = ok ? String(kun.length) : "–";
+  $("#gWait").textContent = ok ? String(wait.length) : "–";
+  $("#gWait").className = "v" + (ok && wait.length ? " down" : "");
+
+  // Aktivität
+  const days = []; for(let i=29;i>=0;i--){ const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i); days.push(d); }
+  const inC = days.map(()=>0), outC = days.map(()=>0), kC = days.map(()=>0);
+  c.forEach(m => { const d = new Date(m.ts); d.setHours(0,0,0,0); const i = days.findIndex(x => +x === +d); if(i<0) return; if(m.out) outC[i]++; else { inC[i]++; if(m.typ !== "sonst") kC[i]++; } });
+  chart("chMail", { type:"bar", data:{ labels: days.map(d => `${d.getDate()}.${d.getMonth()+1}.`),
+    datasets:[ { type:"line", label:"Davon Kunden & Anfragen", data:kC, borderColor:"#D62839", backgroundColor:"#D62839", tension:0, pointRadius:2, order:0 },
+               { label:"Eingang", data:inC, backgroundColor:"#b9b2c9", borderRadius:4, order:1 },
+               { label:"Ausgang", data:outC, backgroundColor:"#2B1740", borderRadius:4, order:1 } ] },
+    options:{ scales:{ x:{ ...gridX, ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit:10 } }, y:{ ...gridY, beginAtZero:true, ticks:{ precision:0 } } }, plugins:{ legend:{ position:"bottom" } } } });
+
+  const item = m => {
+    const name = m.typ === "web" ? "Website-Anfrage" : m.kunde ? kurz(m.kunde.name) : dname(m.from);
+    const ini = m.typ === "web" ? "W" : name.slice(0,1).toUpperCase();
+    const url = `https://mail.google.com/mail/?authuser=${ME}#all/${m.th}`;
+    return `<a class="mail${m.labels.includes("UNREAD")?" unread":""}" href="${esc(url)}" target="_blank" rel="noopener"><div class="av${m.typ==="web"?" web":""}">${esc(ini)}</div><div class="t"><b>${esc(name)}</b><span>${esc(m.subj||"(ohne Betreff)")}</span><small>${esc(m.snip||"")}</small></div><div class="when">${esc(rel(m.ts))}</div></a>`;
+  };
+  const noG = `<div class="empty">${clientId() ? "Gmail ist noch nicht verbunden." : "Gmail wird eingerichtet."}</div>`;
+  $("#lWait").innerHTML = !ok ? noG : wait.length ? wait.slice(0,6).map(item).join("") : `<div class="empty">Alles beantwortet ✓</div>`;
+  $("#lMails").innerHTML = !ok ? noG : (()=>{ const l = c.filter(m => m.typ !== "sonst" && !m.out).slice(0,7); return l.length ? l.map(item).join("") : `<div class="empty">Keine Kundenmails in den letzten 30 Tagen</div>`; })();
+
+  // Kundentabelle
+  const all = live();
+  const rows = new Map();
+  (cache.kunden||[]).filter(k=>!k.geloescht).forEach(k => rows.set(kKey(k.name), { k, n:0, um:0, std:0, off:0, last:null }));
+  all.forEach(a => { if(!a.kunde) return; const key = kKey(a.kunde); if(!rows.has(key)) rows.set(key, { k:{ name:a.kunde }, n:0, um:0, std:0, off:0, last:null }); const r = rows.get(key);
+    if(inRange(a) && past(a)){ r.n++; r.um += betrag(a); r.std += stdMin(a)/60; } if(art(a)==="offen") r.off += betrag(a); });
+  c.forEach(m => { if(m.typ !== "kunde") return; const r = rows.get(kKey(m.kunde.name)); if(r && (!r.last || m.ts > r.last.ts)) r.last = m; });
+  const rl = [...rows.values()].sort((a,b)=>b.um-a.um);
+  $("#tKunden").innerHTML = rl.length ? `<table><thead><tr><th>Kunde</th><th class="n">Einsätze</th><th class="n">Stunden</th><th class="n">Umsatz</th><th>Letzte Mail</th></tr></thead><tbody>${rl.map(r => `<tr>
+    <td><b>${esc(kurz(r.k.name))}</b><div class="muted">${esc(r.k.ansprechpartner||"")}${r.k.telefon ? ` · <a href="tel:${esc(r.k.telefon.replace(/[^\d+]/g,""))}">${esc(r.k.telefon)}</a>` : ""}</div>${r.off ? `<span class="tag bad">${eur(r.off)} offen</span>` : ""}</td>
+    <td class="n">${r.n}</td><td class="n">${n1(r.std)}</td><td class="n"><b>${eur(r.um)}</b></td>
+    <td>${r.last ? `<span class="muted">${esc(rel(r.last.ts))}</span><div style="max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.last.subj)}</div>` : `<span class="muted">${ok ? "–" : ""}</span>`}</td></tr>`).join("")}</tbody></table>` : `<div class="empty">Noch keine Kunden</div>`;
+}
+
+function renderConnect(){
+  const box = $("#connectBox"); const parts = [];
+  if(!zcfg.token) parts.push(`<div class="connect"><p><b>Zettel-Daten verbinden.</b> Trag den GitHub-Schlüssel der Zettel-App ein, dann lädt das Cockpit eure Aufträge live.</p><button class="btn" data-act="set">Verbinden</button></div>`);
+  if(!gToken && !ls.get("nd_gok", false)) parts.push(`<div class="connect" style="margin-top:10px"><p><b>Gmail verbinden.</b> Einmal mit nitroumzug@gmail.com anmelden – das Cockpit liest nur, es verschickt und löscht nichts.</p><button class="btn red" data-act="gmail">Mit Google anmelden</button></div>`);
+  box.innerHTML = parts.join("");
+}
+function renderAll(){
+  $("#nowTxt").textContent = new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  try{ renderZettel(); }catch(e){ console.error(e); }
+  try{ renderMail(); }catch(e){ console.error(e); }
+}
+
+/* ---------- Hilfen ---------- */
+function hhmm(d){ return d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); }
+function fmtD(s){ if(!s) return ""; const d = new Date(s); return `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`; }
+function rel(ts){ const m = (Date.now()-ts)/6e4; if(m<60) return `vor ${Math.max(1,Math.round(m))} Min.`; if(m<1440) return `vor ${Math.round(m/60)} Std.`; const d = Math.round(m/1440); return d===1 ? "gestern" : `vor ${d} Tagen`; }
+function isoWeek(d){ const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y = t.getUTCFullYear(); const w = Math.ceil(((t - Date.UTC(y,0,1)) / 864e5 + 1) / 7); return `${y}-W${String(w).padStart(2,"0")}`; }
+
+/* ---------- Bedienung ---------- */
+function openSet(){ $("#sOwner").value = zcfg.owner||""; $("#sRepo").value = zcfg.repo||""; $("#sToken").value = zcfg.token||""; $("#sClient").value = clientId(); $("#setModal").classList.add("open"); }
+$("#setBtn").addEventListener("click", openSet);
+$("#setCancel").addEventListener("click", () => $("#setModal").classList.remove("open"));
+$("#setModal").addEventListener("click", e => { if(e.target.id === "setModal") $("#setModal").classList.remove("open"); });
+$("#setForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  zcfg = { ...zcfg, owner:$("#sOwner").value.trim(), repo:$("#sRepo").value.trim(), token:$("#sToken").value.trim() }; ls.set(LS.zcfg, zcfg);
+  dcfg = { clientId:$("#sClient").value.trim() }; ls.set(LS.dcfg, dcfg); tokenClient = null;
+  $("#setModal").classList.remove("open"); renderConnect(); await loadZettel(); renderAll();
+});
+$("#connectBox").addEventListener("click", e => { const b = e.target.closest("[data-act]"); if(!b) return; if(b.dataset.act === "set") openSet(); else connectGmail(false); });
+$("#pGmail").addEventListener("click", () => gToken ? refresh() : connectGmail(false));
+$("#pZettel").addEventListener("click", () => zcfg.token ? refresh() : openSet());
+$("#refBtn").addEventListener("click", () => refresh(true));
+$("#range").addEventListener("click", e => { const b = e.target.closest("[data-r]"); if(!b) return; range = +b.dataset.r; document.querySelectorAll("#range button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderAll(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") $("#setModal").classList.remove("open"); });
+
+let busy = false;
+async function refresh(manual){
+  if(busy) return; busy = true;
+  try{ await Promise.all([loadZettel(), loadMail()]); renderAll(); if(manual) toast("Aktualisiert"); } finally { busy = false; }
+}
+{ const s = ls.get("nd_gt", null); if(s && s.e > Date.now()){ gToken = s.t; gExp = s.e; } }
+renderConnect(); renderAll(); refresh();
+setInterval(() => { if(document.visibilityState === "visible") refresh(); }, POLL_MS);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") refresh(); });
+})();
+</script>
+</body>
+</html>
