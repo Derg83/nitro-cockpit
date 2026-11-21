@@ -192,7 +192,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div class="card"><h3>Neueste Kundenmails</h3><div class="sub">Von Partnerfirmen und über die Website</div><div id="lMails"></div></div>
   </div>
 
-  <div class="foot">Daten: Nitro Zettel (GitHub, privat) · Gmail (nur lesend) · aktualisiert sich automatisch jede Minute, solange die Seite offen ist</div>
+  <div class="foot">Daten: Nitro Zettel (GitHub, privat) · Gmail (nur lesend) · aktualisiert sich automatisch alle 5 Minuten, solange die Seite offen ist</div>
 </main>
 
 <div class="modal" id="setModal" role="dialog" aria-modal="true" aria-labelledby="setH">
@@ -215,7 +215,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 /* ---------- Konfiguration ---------- */
 const GOOGLE_CLIENT_ID = "636770946970-9cs7gq32qfjjveioic7i4uj7udq9q6t0.apps.googleusercontent.com";
 const ME = "nitroumzug@gmail.com";
-const POLL_MS = 60000;
+const POLL_MS = 5 * 60000;   // alle 5 Minuten
 const LS = { zcfg:"nz_cfg", dcfg:"nd_cfg", cache:"nd_cache", mail:"nd_mail" };
 
 const $ = s => document.querySelector(s);
@@ -542,15 +542,16 @@ $("#refBtn").addEventListener("click", () => refresh(true));
 $("#range").addEventListener("click", e => { const b = e.target.closest("[data-r]"); if(!b) return; range = +b.dataset.r; document.querySelectorAll("#range button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderAll(); });
 document.addEventListener("keydown", e => { if(e.key === "Escape") $("#setModal").classList.remove("open"); });
 
-let busy = false;
+let busy = false, lastRun = 0;
 async function refresh(manual){
   if(busy) return; busy = true;
+  lastRun = Date.now();
   try{ await Promise.all([loadZettel(), loadMail()]); renderAll(); if(manual) toast("Aktualisiert"); } finally { busy = false; }
 }
 { const s = ls.get("nd_gt", null); if(s && s.e > Date.now()){ gToken = s.t; gExp = s.e; } }
 renderConnect(); renderAll(); refresh();
 setInterval(() => { if(document.visibilityState === "visible") refresh(); }, POLL_MS);
-document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") refresh(); });
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && Date.now() - lastRun >= POLL_MS) refresh(); });
 })();
 </script>
 </body>
