@@ -136,6 +136,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div class="pills">
       <button class="pill" id="pZettel" title="Daten aus der Zettel-App (GitHub)"><span class="d" id="dZettel"></span><span id="tZettel">Zettel</span></button>
       <button class="pill" id="pGmail" title="Gmail nitroumzug@gmail.com"><span class="d" id="dGmail"></span><span id="tGmail">Gmail</span></button>
+      <button class="pill" id="pVivid" title="Vivid Business (wird stündlich über GitHub abgeholt)"><span class="d" id="dVivid"></span><span id="tVivid">Vivid</span></button>
       <button class="iconbtn" id="refBtn" aria-label="Jetzt aktualisieren" title="Jetzt aktualisieren">⟳</button>
       <button class="iconbtn" id="setBtn" aria-label="Einstellungen" title="Einstellungen">⚙</button>
     </div>
@@ -176,6 +177,18 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div class="card"><h3>Offene Forderungen</h3><div class="sub">Abgerechnet, aber noch nicht bezahlt</div><div class="tbl" id="tOffen"></div></div>
   </div>
 
+  <div class="sec-h"><h2>Konto</h2><small id="vividTxt">Vivid Business · nur lesend</small></div>
+  <div class="grid kpis">
+    <div class="card kpi hl"><div class="l">Kontostand</div><div class="v" id="kSaldo">–</div><div class="f" id="fSaldo"></div></div>
+    <div class="card kpi"><div class="l">Eingänge</div><div class="v up" id="kVin">–</div><div class="f" id="fVin">letzte 30 Tage</div></div>
+    <div class="card kpi"><div class="l">Ausgänge</div><div class="v down" id="kVout">–</div><div class="f" id="fVout">letzte 30 Tage</div></div>
+    <div class="card kpi"><div class="l">Vorgemerkt</div><div class="v" id="kVpend">–</div><div class="f" id="fVpend"></div></div>
+  </div>
+  <div class="grid g2e" style="margin-top:14px">
+    <div class="card"><h3>Zahlung passt zu offenem Zettel</h3><div class="sub">Gleicher Betrag wie ein unbezahlter Zettel – Vivid liefert keinen Namen, also bitte prüfen und in der Zettel-App abhaken</div><div class="tbl" id="tMatch"></div></div>
+    <div class="card"><h3>Letzte Umsätze</h3><div class="sub">Neueste zuerst</div><div class="tbl" id="tUms"></div></div>
+  </div>
+
   <div class="sec-h"><h2>Postfach</h2><small id="gmailTxt">nitroumzug@gmail.com</small></div>
   <div class="grid kpis">
     <div class="card kpi"><div class="l">Ungelesen im Posteingang</div><div class="v" id="gUnread">–</div><div class="f" id="gfUnread"></div></div>
@@ -192,7 +205,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div class="card"><h3>Neueste Kundenmails</h3><div class="sub">Von Partnerfirmen und über die Website</div><div id="lMails"></div></div>
   </div>
 
-  <div class="foot">Daten: Nitro Zettel (GitHub, privat) · Gmail (nur lesend) · aktualisiert sich automatisch alle 5 Minuten, solange die Seite offen ist</div>
+  <div class="foot">Daten: Nitro Zettel (GitHub, privat) · Vivid Business (nur lesend, stündlich) · Gmail (nur lesend) · aktualisiert sich automatisch alle 5 Minuten, solange die Seite offen ist</div>
 </main>
 
 <div class="modal" id="setModal" role="dialog" aria-modal="true" aria-labelledby="setH">
@@ -233,6 +246,7 @@ let zcfg = ls.get(LS.zcfg, { owner:"Derg83", repo:"nitro-zettel-daten", token:""
 let dcfg = ls.get(LS.dcfg, { clientId:"" });
 let cache = ls.get(LS.cache, { auftraege:[], kunden:[], at:null });
 let mail = ls.get(LS.mail, { msgs:{}, unread:null, at:null });
+let vivid = ls.get("nd_vivid", { konten:[], umsaetze:[], abgerufen:null });
 let range = 0;
 let gToken = null, gExp = 0, tokenClient = null;
 
@@ -256,6 +270,19 @@ async function loadZettel(){
     ls.set(LS.cache, cache);
     dot("Zettel","ok","Zettel · " + hhmm(new Date()));
   }catch(e){ dot("Zettel","err","Zettel: " + e.message); }
+}
+
+/* ---------- Vivid (über GitHub Action abgeholt) ---------- */
+async function loadVivid(){
+  if(!zcfg.token){ dot("Vivid","err","Vivid: nicht verbunden"); return; }
+  dot("Vivid","busy");
+  try{
+    const [k, u] = await Promise.all([ghFile("vivid/konten.json"), ghFile("vivid/umsaetze.json")]);
+    if(!k){ dot("Vivid","err","Vivid: noch keine Daten"); return; }
+    vivid = { konten:k.konten||[], umsaetze:((u&&u.umsaetze)||[]).slice(0,600), abgerufen:k.abgerufen||null };
+    ls.set("nd_vivid", vivid);
+    dot("Vivid","ok","Vivid · " + (vivid.abgerufen ? hhmm(new Date(vivid.abgerufen)) : "–"));
+  }catch(e){ dot("Vivid","err","Vivid: " + e.message); }
 }
 
 /* ---------- Gmail ---------- */
@@ -506,6 +533,54 @@ function renderMail(){
     <td>${r.last ? `<span class="muted">${esc(rel(r.last.ts))}</span><div style="max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.last.subj)}</div>` : `<span class="muted">${ok ? "–" : ""}</span>`}</td></tr>`).join("")}</tbody></table>` : `<div class="empty">Noch keine Kunden</div>`;
 }
 
+const vnum = s => parseFloat(s) || 0;
+const vok = t => !/declin|cancel|fail|revers|reject/i.test(t.state||"");
+function vName(t){
+  if(t.merchant && t.merchant.name) return t.merchant.name;
+  if(t.type === "transfer") return vnum(t.amount) >= 0 ? "Überweisung eingegangen" : "Überweisung ausgegangen";
+  if(t.type === "card_payment") return "Kartenzahlung";
+  return String(t.type||"Umsatz").replace(/_/g," ");
+}
+function renderVivid(){
+  const ks = vivid.konten||[], us = (vivid.umsaetze||[]).filter(vok);
+  if(!ks.length && !us.length){
+    ["Saldo","Vin","Vout","Vpend"].forEach(id => setKpi(id, "–"));
+    $("#tMatch").innerHTML = $("#tUms").innerHTML = `<div class="empty">Noch keine Vivid-Daten</div>`;
+    return;
+  }
+  const hasBal = ks.some(k => k.balance && k.balance.available != null);
+  const saldo = ks.reduce((s,k) => s + vnum(k.balance && k.balance.available), 0);
+  const iban = ((ks[0] && ks[0].account_details) || []).map(d => d.iban).find(Boolean) || "";
+  setKpi("Saldo", hasBal ? eur(saldo) : "–", `${ks.length > 1 ? ks.length + " Konten" : esc(ks[0] && ks[0].name || "Geschäftskonto")}${iban ? " · …" + esc(iban.replace(/\s/g,"").slice(-4)) : ""}`);
+  $("#vividTxt").textContent = "Vivid Business · nur lesend" + (vivid.abgerufen ? " · Stand " + rel(new Date(vivid.abgerufen).getTime()) : "");
+  const d30 = Date.now() - 30*864e5;
+  const t30 = us.filter(t => new Date(t.created_at) >= d30 && t.state !== "pending");
+  const ein = t30.filter(t => vnum(t.amount) > 0), aus = t30.filter(t => vnum(t.amount) < 0);
+  setKpi("Vin", eur(ein.reduce((s,t)=>s+vnum(t.amount),0)), `${ein.length} Eingang${ein.length===1?"":"e"} · letzte 30 Tage`);
+  setKpi("Vout", eur(-aus.reduce((s,t)=>s+vnum(t.amount),0)), `${aus.length} Ausgang${aus.length===1?"":"e"} · letzte 30 Tage`);
+  const pend = us.filter(t => t.state === "pending");
+  setKpi("Vpend", eur(-pend.reduce((s,t)=>s+vnum(t.amount),0)), pend.length ? `${pend.length} Zahlung${pend.length>1?"en":""} noch nicht gebucht` : "Nichts vorgemerkt");
+
+  // Eingänge, die betragsgleich zu einem unbezahlten Zettel sind
+  const offen = live().filter(a => !a.bezahlt && past(a) && betrag(a) > 0);
+  const rows = [];
+  us.filter(t => t.type === "transfer" && vnum(t.amount) > 0).forEach(t => {
+    const td = new Date(t.created_at), tb = vnum(t.amount);
+    const hits = offen.filter(a => Math.abs(betrag(a) - tb) < 0.01 && td >= new Date(new Date(a.datum).getTime() - 30*864e5));
+    if(hits.length) rows.push({ t, hits });
+  });
+  $("#tMatch").innerHTML = rows.length ? `<table><thead><tr><th>Eingang</th><th>Passt zu</th><th class="n">Betrag</th></tr></thead><tbody>${rows.slice(0,10).map(r =>
+    `<tr><td>${esc(fmtD(r.t.created_at))}</td><td>${r.hits.map(a => `${esc(kurz(kundeName(a.kunde)))}<div class="muted">Einsatz ${esc(fmtD(a.datum))}${a.re_nr ? " · " + esc(a.re_nr) : ""}</div>`).join('<div class="muted">oder</div>')}</td><td class="n"><b class="up">${eur(vnum(r.t.amount))}</b></td></tr>`
+  ).join("")}</tbody></table>` : `<div class="empty">Kein Eingang passt gerade zu einem offenen Zettel</div>`;
+
+  const last = [...us].sort((a,b) => (b.created_at||"").localeCompare(a.created_at||"")).slice(0,12);
+  $("#tUms").innerHTML = `<table><thead><tr><th>Datum</th><th>Was</th><th class="n">Betrag</th></tr></thead><tbody>${last.map(t => {
+    const v = vnum(t.amount);
+    const sub = [t.card && t.card.last_4 ? "Karte ·" + esc(t.card.last_4) : "", t.merchant && t.merchant.city ? esc(t.merchant.city) : ""].filter(Boolean).join(" · ");
+    return `<tr><td>${esc(fmtD(t.created_at))}</td><td>${esc(vName(t))}${t.state === "pending" ? ' <span class="tag warn">vorgemerkt</span>' : ""}${sub ? `<div class="muted">${sub}</div>` : ""}</td><td class="n"><b class="${v >= 0 ? "up" : ""}">${v >= 0 ? "+" : ""}${eur(v)}</b></td></tr>`;
+  }).join("")}</tbody></table>`;
+}
+
 function renderConnect(){
   const box = $("#connectBox"); const parts = [];
   if(!zcfg.token) parts.push(`<div class="connect"><p><b>Zettel-Daten verbinden.</b> Trag den GitHub-Schlüssel der Zettel-App ein, dann lädt das Cockpit eure Aufträge live.</p><button class="btn" data-act="set">Verbinden</button></div>`);
@@ -516,6 +591,7 @@ function renderAll(){
   $("#nowTxt").textContent = new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   try{ renderZettel(); }catch(e){ console.error(e); }
   try{ renderMail(); }catch(e){ console.error(e); }
+  try{ renderVivid(); }catch(e){ console.error(e); }
 }
 
 /* ---------- Hilfen ---------- */
@@ -533,10 +609,11 @@ $("#setForm").addEventListener("submit", async e => {
   e.preventDefault();
   zcfg = { ...zcfg, owner:$("#sOwner").value.trim(), repo:$("#sRepo").value.trim(), token:$("#sToken").value.trim() }; ls.set(LS.zcfg, zcfg);
   dcfg = { clientId:$("#sClient").value.trim() }; ls.set(LS.dcfg, dcfg); tokenClient = null;
-  $("#setModal").classList.remove("open"); renderConnect(); await loadZettel(); renderAll();
+  $("#setModal").classList.remove("open"); renderConnect(); await Promise.all([loadZettel(), loadVivid()]); renderAll();
 });
 $("#connectBox").addEventListener("click", e => { const b = e.target.closest("[data-act]"); if(!b) return; if(b.dataset.act === "set") openSet(); else connectGmail(false); });
 $("#pGmail").addEventListener("click", () => gToken ? refresh() : connectGmail(false));
+$("#pVivid").addEventListener("click", () => zcfg.token ? refresh(true) : openSet());
 $("#pZettel").addEventListener("click", () => zcfg.token ? refresh() : openSet());
 $("#refBtn").addEventListener("click", () => refresh(true));
 $("#range").addEventListener("click", e => { const b = e.target.closest("[data-r]"); if(!b) return; range = +b.dataset.r; document.querySelectorAll("#range button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderAll(); });
@@ -546,7 +623,7 @@ let busy = false, lastRun = 0;
 async function refresh(manual){
   if(busy) return; busy = true;
   lastRun = Date.now();
-  try{ await Promise.all([loadZettel(), loadMail()]); renderAll(); if(manual) toast("Aktualisiert"); } finally { busy = false; }
+  try{ await Promise.all([loadZettel(), loadMail(), loadVivid()]); renderAll(); if(manual) toast("Aktualisiert"); } finally { busy = false; }
 }
 { const s = ls.get("nd_gt", null); if(s && s.e > Date.now()){ gToken = s.t; gExp = s.e; } }
 renderConnect(); renderAll(); refresh();
