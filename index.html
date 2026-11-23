@@ -137,6 +137,9 @@ select.st[data-s="kontaktiert"]{border-color:#5b7fc7;background:#eef2fb}
 select.st[data-s="angebot"]{border-color:#e7a33e;background:#fdf4e4}
 select.st[data-s="gebucht"]{border-color:#1f8a5b;background:#e4f5ed}
 select.st[data-s="verloren"]{border-color:#b9b2c9;background:#f4f3f7;color:var(--ink3)}
+select.st[data-s="schmutz"]{border-color:#8d6e63;background:#f3ece9;color:#6d4c41}
+select.lgrund{font:inherit;font-size:12.5px;border:1px solid #d7c4bd;border-radius:8px;padding:6px 8px;background:#faf6f4;color:#6d4c41;margin:0 0 10px;width:100%}
+.lcard.schmutz{opacity:.75}
 .btn.sm{padding:7px 11px;font-size:12.5px;border-radius:8px;text-decoration:none;display:inline-block}
 .lfilter{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
 .lfilter input{flex:1;min-width:180px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;background:#fff}
@@ -187,11 +190,6 @@ select.st[data-s="verloren"]{border-color:#b9b2c9;background:#f4f3f7;color:var(-
   <div id="connectBox"></div>
 
   <div id="viewHome">
-  <div class="sec-h"><h2>Leads</h2><small><a href="#leads">Alle Leads ansehen →</a></small></div>
-  <div class="card lhome">
-    <div class="lstrip" id="hLeadChips"></div>
-    <div id="hLeads"></div>
-  </div>
 
   <div class="sec-h"><h2>Finanzen</h2><small id="rangeTxt">Gesamter Zeitraum</small></div>
   <div class="grid kpis">
@@ -210,6 +208,12 @@ select.st[data-s="verloren"]{border-color:#b9b2c9;background:#f4f3f7;color:var(-
   <div class="grid g2" style="margin-top:14px">
     <div class="card"><h3>Umsatz pro Monat</h3><div class="sub">Nach Zahlungsstatus</div><div class="chartbox"><canvas id="chMonat" aria-label="Umsatz pro Monat"></canvas></div></div>
     <div class="card"><h3>Umsatz nach Kunde</h3><div class="sub">Anteil am Umsatz im Zeitraum</div><div class="chartbox"><canvas id="chKunde" aria-label="Umsatz nach Kunde"></canvas></div></div>
+  </div>
+
+  <div class="sec-h"><h2>Leads</h2><small><a href="#leads">Alle Leads ansehen →</a></small></div>
+  <div class="card lhome">
+    <div class="lstrip" id="hLeadChips"></div>
+    <div id="hLeads"></div>
   </div>
 
   <div class="sec-h"><h2>Einsätze &amp; Team</h2><small>Aus den Zetteln</small></div>
@@ -751,10 +755,12 @@ const LST = [
   { k:"kontaktiert", l:"Kontaktiert", c:"#5b7fc7" },
   { k:"angebot", l:"Angebot geschickt", c:"#e7a33e" },
   { k:"gebucht", l:"Abgeschlossen", c:"#1f8a5b" },
-  { k:"verloren", l:"Abgesagt", c:"#b9b2c9" } ];
+  { k:"verloren", l:"Abgesagt", c:"#b9b2c9" },
+  { k:"schmutz", l:"Schmutz", c:"#8d6e63" } ];
+const GRUENDE = ["Nur Preisvergleich","Nicht erreichbar","Falsche Kontaktdaten","Außerhalb Einsatzgebiet","Doppelte Anfrage","Sonstiges"];
 const lst = k => LST.find(s => s.k === k) || LST[0];
 const LOPEN = new Set(["neu","kontaktiert","angebot"]);
-const LORD = { neu:0, kontaktiert:1, angebot:2, gebucht:3, verloren:4 };
+const LORD = { neu:0, kontaktiert:1, angebot:2, gebucht:3, verloren:4, schmutz:5 };
 const lList = () => Object.values(leads.leads||{}).filter(l => !l.geloescht);
 const lSort = (a, b) => (LORD[a.status] - LORD[b.status]) || (a.datum||"9").localeCompare(b.datum||"9") || (b.eingang||"").localeCompare(a.eingang||"");
 const telNr = t => String(t||"").replace(/[^\d+]/g, "");
@@ -772,7 +778,8 @@ function leadCard(l){
   const det = o => [o.etage ? (o.etage === "EG" ? "EG" : o.etage + ". OG") : "", o.aufzug === "Ja" ? "mit Aufzug" : o.aufzug === "Nein" ? "ohne Aufzug" : "", o.zimmer ? o.zimmer + " Zimmer" : "", o.flaeche || ""].filter(Boolean).join(" · ");
   const tn = telNr(l.tel), wa = tn.replace(/^\+/, "").replace(/^0/, "49");
   const last = (l.verlauf||[]).slice(-1)[0];
-  return `<div class="card lcard" style="border-left:4px solid ${s.c}">
+  const grund = l.status === "schmutz" ? `<select class="lgrund" data-id="${esc(l.id)}" aria-label="Grund für Schmutz"><option value="">Grund wählen …</option>${GRUENDE.map(g => `<option${g === l.grund ? " selected" : ""}>${g}</option>`).join("")}</select>` : "";
+  return `<div class="card lcard${l.status === "schmutz" ? " schmutz" : ""}" style="border-left:4px solid ${s.c}">
     <div class="hd"><div><b class="nm">${esc(l.name || "Ohne Namen")}</b>${ageTag(l)}<div class="muted">${esc(l.quelle || "")}${l.eingang ? " · Eingang " + esc(fmtD(l.eingang)) : ""}</div></div>${stSelect(l)}</div>
     <dl>
       <dt>Umzug</dt><dd><b>${l.datum ? esc(fmtD(l.datum)) : "–"}</b>${l.km != null ? " · " + n1(l.km) + " km" : ""}${l.abrechnung && l.abrechnung !== "Privat" ? ` · <span class="tag warn">Zahlt: ${esc(l.abrechnung)}</span>` : ""}</dd>
@@ -781,6 +788,7 @@ function leadCard(l){
       ${(l.extras||[]).length ? `<dt>Extras</dt><dd>${l.extras.map(x => `<span class="tag">${esc(x)}</span>`).join(" ")}</dd>` : ""}
     </dl>
     ${l.info ? `<details><summary class="muted">Beschreibung vom Kunden</summary><p>${esc(l.info)}</p></details>` : ""}
+    ${grund}
     <div class="acts">${tn ? `<a class="btn sm" href="tel:${esc(tn)}">Anrufen</a><a class="btn sm sec" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${l.mail ? `<a class="btn sm sec" href="mailto:${esc(l.mail)}">E-Mail</a>` : ""}${l.mid ? `<a class="btn sm sec" href="https://mail.google.com/mail/?authuser=${ME}#all/${esc(l.mid)}" target="_blank" rel="noopener">Anfrage öffnen</a>` : ""}</div>
     <textarea class="lnote" data-id="${esc(l.id)}" rows="2" placeholder="Notiz: z. B. KV geschickt, Rückruf Freitag …" aria-label="Notiz zu ${esc(l.name)}">${esc(l.notiz || "")}</textarea>
     ${last ? `<div class="muted small">Status zuletzt geändert: ${esc(lst(last.s).l)} · ${esc(rel(new Date(last.at).getTime()))}</div>` : ""}
@@ -802,9 +810,9 @@ function renderLeads(){
   setKpi("LNeu", String(nNeu), nNeu ? "bitte zuerst anrufen" : "Alle kontaktiert ✓");
   $("#kLNeu").className = "v" + (nNeu ? " down" : "");
   const dec = cnt("gebucht") + cnt("verloren");
-  setKpi("LQuote", dec ? pct(cnt("gebucht") / dec) : "–", `${cnt("gebucht")} abgeschlossen · ${cnt("verloren")} abgesagt`);
+  setKpi("LQuote", dec ? pct(cnt("gebucht") / dec) : "–", `${cnt("gebucht")} abgeschlossen · ${cnt("verloren")} abgesagt · Schmutz zählt nicht`);
   const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
-  setKpi("LMonat", String(all.filter(l => l.eingang && new Date(l.eingang) >= m0).length), `seit 1. ${MON[m0.getMonth()]} · ${all.length} insgesamt`);
+  setKpi("LMonat", String(all.filter(l => l.eingang && new Date(l.eingang) >= m0).length), `seit 1. ${MON[m0.getMonth()]} · ${all.length} insgesamt${cnt("schmutz") ? " · " + cnt("schmutz") + " Schmutz (" + pct(cnt("schmutz") / all.length) + ")" : ""}`);
   const fl = [{ k:"offen", l:"Offen", n:open.length, c:"#2B1740" }, ...LST.map(s => ({ ...s, n:cnt(s.k) })), { k:"alle", l:"Alle", n:all.length, c:"#8a82a0" }];
   $("#lFilter").innerHTML = fl.map(f => `<button type="button" class="lchip" data-f="${f.k}" aria-pressed="${f.k === lFilter}"><i style="background:${f.c}"></i>${f.l}<b>${f.n}</b></button>`).join("");
   const q = ($("#lSearch").value || "").trim().toLowerCase();
@@ -861,6 +869,8 @@ window.addEventListener("hashchange", route);
 document.addEventListener("change", e => {
   const s = e.target.closest("select.st");
   if(s){ const v = s.value, id = s.dataset.id; changeLead(id, l => { if(l.status !== v){ l.status = v; (l.verlauf = l.verlauf || []).push({ s:v, at:new Date().toISOString() }); } }, `Lead: ${lst(v).l}`); return; }
+  const g = e.target.closest("select.lgrund");
+  if(g){ const v = g.value, id = g.dataset.id; changeLead(id, l => { l.grund = v; }, "Lead: Schmutz-Grund"); return; }
   const t = e.target.closest("textarea.lnote");
   if(t){ const v = t.value.trim(), id = t.dataset.id; if(((leads.leads[id]||{}).notiz||"") !== v) changeLead(id, l => { l.notiz = v; }, "Lead: Notiz"); }
 });
