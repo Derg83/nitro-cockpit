@@ -129,6 +129,9 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .lrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #f0eef4}
 .lrow:first-child{border-top:0;padding-top:2px}
 .lrow .t{flex:1;min-width:0}
+.lrow{flex-wrap:wrap}
+@media (max-width:700px){.lrow .t{flex:1 1 100%}.lrow .tel{flex:1 1 auto;text-align:center}.lrow select.st{flex:1 1 auto;max-width:none}.lstrip .lchip{padding:6px 10px}}
+.lrow .t b .ktags,.lrow .t b .tag{font-size:10.5px}
 .lrow .t b{display:block;font-size:13.5px}
 .lrow .t span{display:block;font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 select.st{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:#fff;color:var(--ink);max-width:180px;cursor:pointer}
