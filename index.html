@@ -112,7 +112,46 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .modal form{background:#fff;border-radius:16px;max-width:520px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .modal h3{margin:0 0 4px}
 .modal label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin:14px 0 5px}
-.modal input{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#faf9fc}
+.modal input,.modal select,.modal textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#faf9fc;font:inherit;color:var(--ink)}
+.modal form{max-height:92vh;overflow:auto}
+.modal .two{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+/* Leads */
+.tabs{display:inline-flex;background:rgba(255,255,255,.1);border-radius:10px;padding:3px}
+.tabs a{color:#d9d1ea;text-decoration:none;font-weight:700;font-size:13px;padding:6px 13px;border-radius:8px;display:inline-flex;align-items:center;gap:6px}
+.tabs a[aria-current="page"]{background:#fff;color:var(--brand)}
+.tabs .cnt{min-width:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;line-height:18px;text-align:center}
+.lstrip{display:flex;gap:8px;flex-wrap:wrap}
+.lchip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:7px 12px;background:#fff;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:none}
+.lchip i{width:8px;height:8px;border-radius:50%;flex:none}
+.lchip b{font-size:15px;font-variant-numeric:tabular-nums}
+.lchip[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand);background:#f6f3fb}
+.lhome{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.lrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #f0eef4}
+.lrow:first-child{border-top:0;padding-top:2px}
+.lrow .t{flex:1;min-width:0}
+.lrow .t b{display:block;font-size:13.5px}
+.lrow .t span{display:block;font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+select.st{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:#fff;color:var(--ink);max-width:180px;cursor:pointer}
+select.st[data-s="neu"]{border-color:#7a5bb5;background:#f3effa}
+select.st[data-s="kontaktiert"]{border-color:#5b7fc7;background:#eef2fb}
+select.st[data-s="angebot"]{border-color:#e7a33e;background:#fdf4e4}
+select.st[data-s="gebucht"]{border-color:#1f8a5b;background:#e4f5ed}
+select.st[data-s="verloren"]{border-color:#b9b2c9;background:#f4f3f7;color:var(--ink3)}
+.btn.sm{padding:7px 11px;font-size:12.5px;border-radius:8px;text-decoration:none;display:inline-block}
+.lfilter{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.lfilter input{flex:1;min-width:180px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;background:#fff}
+.lcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+@media (max-width:700px){.lcards{grid-template-columns:1fr}.modal .two{grid-template-columns:1fr}}
+.lcard .hd{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.lcard .nm{font-size:15px}
+.lcard dl{display:grid;grid-template-columns:48px 1fr;gap:6px 10px;margin:12px 0;font-size:13px}
+.lcard dt{color:var(--ink3);font-weight:600}
+.lcard dd{margin:0;min-width:0}
+.lcard .acts{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.lcard textarea{width:100%;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;resize:vertical;background:#faf9fc}
+.lcard details{font-size:12.5px;margin:4px 0 8px}
+.lcard details p{margin:6px 0 0;color:var(--ink2);line-height:1.45}
+.lcard .small{font-size:11.5px;margin-top:6px}
 .modal .hint{font-size:12px;color:var(--ink3);margin-top:6px;line-height:1.45}
 .modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:60}
@@ -126,6 +165,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   <div class="top-in">
     <div class="logo" aria-label="Nitro Umzug"><b>NITRO</b><span>UMZUG</span></div>
     <div class="ttl"><b>Cockpit</b><span id="nowTxt">–</span></div>
+    <nav class="tabs" aria-label="Ansicht"><a href="#" data-v="home" aria-current="page">Übersicht</a><a href="#leads" data-v="leads">Leads <span class="cnt" id="leadBadge" hidden></span></a></nav>
     <div class="grow"></div>
     <div class="seg" id="range" role="group" aria-label="Zeitraum">
       <button data-r="30" aria-pressed="false">30 Tage</button>
@@ -145,6 +185,13 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 
 <main>
   <div id="connectBox"></div>
+
+  <div id="viewHome">
+  <div class="sec-h"><h2>Leads</h2><small><a href="#leads">Alle Leads ansehen →</a></small></div>
+  <div class="card lhome">
+    <div class="lstrip" id="hLeadChips"></div>
+    <div id="hLeads"></div>
+  </div>
 
   <div class="sec-h"><h2>Finanzen</h2><small id="rangeTxt">Gesamter Zeitraum</small></div>
   <div class="grid kpis">
@@ -205,7 +252,25 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div class="card"><h3>Neueste Kundenmails</h3><div class="sub">Von Partnerfirmen und über die Website</div><div id="lMails"></div></div>
   </div>
 
-  <div class="foot">Daten: Nitro Zettel (GitHub, privat) · Vivid Business (nur lesend, stündlich) · Gmail (nur lesend) · aktualisiert sich automatisch alle 5 Minuten, solange die Seite offen ist</div>
+  </div><!-- /viewHome -->
+
+  <div id="viewLeads" hidden>
+    <div class="sec-h"><h2>Leads</h2><small id="leadsTxt">ImmoScout24 kommt automatisch rein, sobald Gmail verbunden ist</small></div>
+    <div class="grid kpis">
+      <div class="card kpi hl"><div class="l">Offene Leads</div><div class="v" id="kLOffen">–</div><div class="f" id="fLOffen"></div></div>
+      <div class="card kpi"><div class="l">Neu – noch nicht kontaktiert</div><div class="v" id="kLNeu">–</div><div class="f" id="fLNeu"></div></div>
+      <div class="card kpi"><div class="l">Abschlussquote</div><div class="v" id="kLQuote">–</div><div class="f" id="fLQuote"></div></div>
+      <div class="card kpi"><div class="l">Leads diesen Monat</div><div class="v" id="kLMonat">–</div><div class="f" id="fLMonat"></div></div>
+    </div>
+    <div class="lfilter">
+      <div class="lstrip" id="lFilter" role="group" aria-label="Status filtern"></div>
+      <input id="lSearch" type="search" placeholder="Suchen: Name, Ort, Telefon …" aria-label="Leads durchsuchen">
+      <button class="btn" id="lAdd" type="button">+ Lead</button>
+    </div>
+    <div class="lcards" id="lCards"></div>
+  </div>
+
+  <div class="foot">Daten: Nitro Zettel & Leads (GitHub, privat) · Vivid Business (nur lesend, stündlich) · Gmail (nur lesend) · aktualisiert sich automatisch alle 5 Minuten, solange die Seite offen ist</div>
 </main>
 
 <div class="modal" id="setModal" role="dialog" aria-modal="true" aria-labelledby="setH">
@@ -218,6 +283,23 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div class="hint">Derselbe Schlüssel wie in der Zettel-App. Wenn du die Zettel-App auf diesem Gerät schon verbunden hast, ist er automatisch da.</div>
     <label for="sClient">Google Client-ID (für Gmail)</label><input id="sClient" placeholder="….apps.googleusercontent.com" autocapitalize="off" spellcheck="false">
     <div class="row"><button type="button" class="btn sec" id="setCancel">Abbrechen</button><button class="btn" type="submit">Speichern</button></div>
+  </form>
+</div>
+<div class="modal" id="leadModal" role="dialog" aria-modal="true" aria-labelledby="leadH">
+  <form id="leadForm" autocomplete="off">
+    <h3 id="leadH">Lead hinzufügen</h3>
+    <div class="hint">Für Anfragen per Telefon, WhatsApp, Website oder Empfehlung. ImmoScout24 kommt automatisch.</div>
+    <label for="lfName">Name</label><input id="lfName" required>
+    <div class="two">
+      <div><label for="lfTel">Telefon</label><input id="lfTel" type="tel"></div>
+      <div><label for="lfMail">E-Mail</label><input id="lfMail" type="email"></div>
+      <div><label for="lfVon">Von (Ort)</label><input id="lfVon" placeholder="z. B. Wuppertal-Elberfeld"></div>
+      <div><label for="lfNach">Nach (Ort)</label><input id="lfNach"></div>
+      <div><label for="lfDatum">Umzugsdatum</label><input id="lfDatum" type="date"></div>
+      <div><label for="lfQuelle">Quelle</label><select id="lfQuelle"><option>Telefon</option><option>WhatsApp</option><option>Website</option><option>Empfehlung</option><option>ImmoScout24</option><option>Sonstige</option></select></div>
+    </div>
+    <label for="lfNotiz">Notiz</label><textarea id="lfNotiz" rows="2"></textarea>
+    <div class="row"><button type="button" class="btn sec" id="leadCancel">Abbrechen</button><button class="btn" type="submit">Speichern</button></div>
   </form>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -247,6 +329,8 @@ let dcfg = ls.get(LS.dcfg, { clientId:"" });
 let cache = ls.get(LS.cache, { auftraege:[], kunden:[], at:null });
 let mail = ls.get(LS.mail, { msgs:{}, unread:null, at:null });
 let vivid = ls.get("nd_vivid", { konten:[], umsaetze:[], abgerufen:null });
+let leads = ls.get("nd_leads", { leads:{} });
+let lFilter = "offen";
 let range = 0;
 let gToken = null, gExp = 0, tokenClient = null;
 
@@ -270,6 +354,87 @@ async function loadZettel(){
     ls.set(LS.cache, cache);
     dot("Zettel","ok","Zettel · " + hhmm(new Date()));
   }catch(e){ dot("Zettel","err","Zettel: " + e.message); }
+}
+
+/* ---------- Leads (data/leads.json im Daten-Repo) ---------- */
+const ghHeaders = () => ({ Authorization:"Bearer "+zcfg.token, Accept:"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28" });
+const ghUrl = path => `https://api.github.com/repos/${encodeURIComponent(zcfg.owner)}/${encodeURIComponent(zcfg.repo)}/contents/${path}`;
+const b64enc = s => { const b = new TextEncoder().encode(s); let bin = ""; for(let i=0;i<b.length;i+=0x8000) bin += String.fromCharCode.apply(null, b.subarray(i,i+0x8000)); return btoa(bin); };
+async function ghGet(path){
+  const r = await fetch(ghUrl(path) + "?t=" + Date.now(), { cache:"no-store", headers:ghHeaders() });
+  if(r.status === 404) return null;
+  if(r.status === 401 || r.status === 403) throw new Error("GitHub-Schlüssel ungültig");
+  if(!r.ok) throw new Error("GitHub " + r.status);
+  const j = await r.json(); return { data:JSON.parse(b64dec(j.content)), sha:j.sha };
+}
+async function loadLeads(){
+  if(!zcfg.token) return;
+  try{ const r = await ghGet("data/leads.json"); leads = r ? r.data : { leads:{} }; leads.leads = leads.leads || {}; ls.set("nd_leads", leads); }
+  catch(e){ console.error(e); }
+}
+async function saveLeads(mut, msg){
+  if(!zcfg.token) throw new Error("erst GitHub verbinden (⚙)");
+  for(let i = 0; i < 3; i++){
+    const cur = await ghGet("data/leads.json");
+    const base = cur ? cur.data : { leads:{} }; base.leads = base.leads || {};
+    mut(base); base.geaendert = new Date().toISOString();
+    const r = await fetch(ghUrl("data/leads.json"), { method:"PUT", headers:ghHeaders(),
+      body: JSON.stringify({ message: msg || "Cockpit: Leads aktualisiert", content: b64enc(JSON.stringify(base, null, 1) + "\n"), ...(cur ? { sha:cur.sha } : {}) }) });
+    if(r.ok){ leads = base; ls.set("nd_leads", leads); return; }
+    if(r.status === 401 || r.status === 403) throw new Error("Schlüssel darf nicht schreiben");
+    if(r.status !== 409 && r.status !== 422) throw new Error("GitHub " + r.status);
+  }
+  throw new Error("gleichzeitige Änderung – bitte nochmal");
+}
+async function changeLead(id, fn, msg){
+  const l = leads.leads[id]; if(l){ fn(l); renderLeads(); }
+  try{ await saveLeads(b => { if(b.leads[id]) fn(b.leads[id]); }, msg); renderLeads(); toast("Gespeichert ✓"); }
+  catch(e){ toast("Nicht gespeichert: " + e.message); await loadLeads(); renderLeads(); }
+}
+// ImmoScout24-Mails aus Gmail lesen und als neue Leads anlegen
+const b64url = s => b64dec(s.replace(/-/g,"+").replace(/_/g,"/"));
+function findPart(p, type){
+  if(!p) return "";
+  if(p.mimeType === type && p.body && p.body.data) return b64url(p.body.data);
+  for(const c of (p.parts||[])){ const t = findPart(c, type); if(t) return t; }
+  return "";
+}
+function parseIS24(j){
+  const subj = hdr(j, "Subject"); const m = /ID\s*(\d+)/.exec(subj); if(!m) return null;
+  let txt = findPart(j.payload, "text/plain") || findPart(j.payload, "text/html").replace(/<br\s*\/?>/gi,"\n").replace(/<\/(tr|p|div|h\d)>/gi,"\n").replace(/<[^>]+>/g," ");
+  txt = txt.replace(/\r/g,"").replace(/&sup2;/g,"²").replace(/&amp;/g,"&").replace(/&nbsp;/g," ");
+  const sec = (a, b) => { const i = txt.search(new RegExp("^\\s*" + a + "\\s*$", "m")); if(i < 0) return ""; const rest = txt.slice(i + 1); const k = b ? rest.search(new RegExp("^\\s*" + b + "\\s*$", "m")) : -1; return k > 0 ? rest.slice(0, k) : rest; };
+  const f = (s, lab) => { const r = new RegExp("^\\s*" + lab + ":[ \\t]*(.*)$", "m").exec(s); return r ? r[1].trim() : ""; };
+  const kon = sec("Kontaktdaten", "Auszug"), aus = sec("Auszug", "Einzug"), ein = sec("Einzug", "Details zur Anfrage");
+  const ort = s => f(s, "PLZ / Ort").replace(/^DE-/, "");
+  const iso = s => { const r = /(\d{2})\.(\d{2})\.(\d{4})/.exec(s||""); return r ? `${r[3]}-${r[2]}-${r[1]}` : ""; };
+  const km = (/Entfernung[^:\n]*:\s*([\d.,]+)\s*km/.exec(txt)||[])[1];
+  const ja = s => [...s.matchAll(/^\s*([^:\n]{2,40}):\s*Ja\s*$/gm)].map(x => x[1].trim());
+  const besch = (/Beschreibung Umzug:\s*([\s\S]*)$/.exec(aus)||[])[1];
+  return { id:"is24-" + m[1], quelle:"ImmoScout24", mid:j.id, eingang:new Date(+j.internalDate).toISOString(),
+    name: f(kon, "Name") || (subj.split("/")[1]||"").trim(), tel:f(kon, "Telefon"), mail:f(kon, "E-Mail"), abrechnung:f(kon, "Abrechnung über"),
+    art: ((/^=+\s*\n\s*([^\n=]+?)\s*\n=+/m.exec(txt)||[])[1]||"").trim(), typ: ((/^#\s*Neue\s+(.+)$/m.exec(txt)||[])[1]||"").trim(),
+    datum: iso(f(aus, "ab")) || iso(subj.split("Umz.-Datum")[1]),
+    von:{ str:f(aus, "Straße"), ort:ort(aus), etage:f(aus, "Etage"), aufzug:f(aus, "Aufzug im Haus"), zimmer:f(aus, "Zimmer"), flaeche:f(aus, "Fläche") },
+    nach:{ str:f(ein, "Straße"), ort:ort(ein), etage:f(ein, "Etage"), aufzug:f(ein, "Aufzug im Haus") },
+    km: km ? parseFloat(km.replace(/\./g,"").replace(",", ".")) : null,
+    extras: [...new Set([...ja(aus), ...ja(ein)])], info: besch ? besch.replace(/-{5,}[\s\S]*$/, "").trim().slice(0, 800) : "" };
+}
+async function importLeads(){
+  if(!gToken || Date.now() > gExp || !zcfg.token) return;
+  try{
+    const ids = await listIds('from:noreply@immobilienscout24.de subject:Umzugsanfrage newer_than:120d', 100);
+    const known = new Set(Object.values(leads.leads||{}).map(l => l.mid).filter(Boolean));
+    const neu = ids.filter(m => !known.has(m.id)); if(!neu.length) return;
+    const found = (await pool(neu, 4, async m => { try{ return parseIS24(await gapi(`messages/${m.id}?format=full`)); }catch(e){ return null; } })).filter(Boolean);
+    const fresh = found.filter(p => !(leads.leads||{})[p.id]);
+    if(!found.length) return;
+    await saveLeads(b => found.forEach(p => {
+      if(!b.leads[p.id]) b.leads[p.id] = { ...p, status:"neu", notiz:"", verlauf:[{ s:"neu", at:p.eingang }] };
+      else if(!b.leads[p.id].mid) b.leads[p.id].mid = p.mid;
+    }), `Leads: ${found.length} ImmoScout24-Anfrage(n) übernommen`);
+    if(fresh.length) toast(`${fresh.length} neue${fresh.length > 1 ? "" : "r"} Lead${fresh.length > 1 ? "s" : ""} von ImmoScout24`);
+  }catch(e){ console.error("Lead-Import", e); }
 }
 
 /* ---------- Vivid (über GitHub Action abgeholt) ---------- */
@@ -581,6 +746,84 @@ function renderVivid(){
   }).join("")}</tbody></table>`;
 }
 
+const LST = [
+  { k:"neu", l:"Neu", c:"#7a5bb5" },
+  { k:"kontaktiert", l:"Kontaktiert", c:"#5b7fc7" },
+  { k:"angebot", l:"Angebot geschickt", c:"#e7a33e" },
+  { k:"gebucht", l:"Abgeschlossen", c:"#1f8a5b" },
+  { k:"verloren", l:"Abgesagt", c:"#b9b2c9" } ];
+const lst = k => LST.find(s => s.k === k) || LST[0];
+const LOPEN = new Set(["neu","kontaktiert","angebot"]);
+const LORD = { neu:0, kontaktiert:1, angebot:2, gebucht:3, verloren:4 };
+const lList = () => Object.values(leads.leads||{}).filter(l => !l.geloescht);
+const lSort = (a, b) => (LORD[a.status] - LORD[b.status]) || (a.datum||"9").localeCompare(b.datum||"9") || (b.eingang||"").localeCompare(a.eingang||"");
+const telNr = t => String(t||"").replace(/[^\d+]/g, "");
+const ortK = o => String(o||"").replace(/^\d{5}\s*/, "");
+const route2 = l => [ortK(l.von && l.von.ort), ortK(l.nach && l.nach.ort)].filter(Boolean).join(" → ");
+function stSelect(l){ return `<select class="st" data-id="${esc(l.id)}" data-s="${esc(l.status)}" aria-label="Status von ${esc(l.name)}">${LST.map(s => `<option value="${s.k}"${s.k === l.status ? " selected" : ""}>${s.l}</option>`).join("")}</select>`; }
+function ageTag(l){
+  if(l.status !== "neu" || !l.eingang) return "";
+  const h = (Date.now() - new Date(l.eingang)) / 36e5;
+  return ` <span class="tag ${h > 24 ? "bad" : "warn"}">${esc(rel(new Date(l.eingang).getTime()))}</span>`;
+}
+function leadCard(l){
+  const s = lst(l.status), v = l.von || {}, n = l.nach || {};
+  const adr = o => [o.str, o.ort].filter(Boolean).join(", ");
+  const det = o => [o.etage ? (o.etage === "EG" ? "EG" : o.etage + ". OG") : "", o.aufzug === "Ja" ? "mit Aufzug" : o.aufzug === "Nein" ? "ohne Aufzug" : "", o.zimmer ? o.zimmer + " Zimmer" : "", o.flaeche || ""].filter(Boolean).join(" · ");
+  const tn = telNr(l.tel), wa = tn.replace(/^\+/, "").replace(/^0/, "49");
+  const last = (l.verlauf||[]).slice(-1)[0];
+  return `<div class="card lcard" style="border-left:4px solid ${s.c}">
+    <div class="hd"><div><b class="nm">${esc(l.name || "Ohne Namen")}</b>${ageTag(l)}<div class="muted">${esc(l.quelle || "")}${l.eingang ? " · Eingang " + esc(fmtD(l.eingang)) : ""}</div></div>${stSelect(l)}</div>
+    <dl>
+      <dt>Umzug</dt><dd><b>${l.datum ? esc(fmtD(l.datum)) : "–"}</b>${l.km != null ? " · " + n1(l.km) + " km" : ""}${l.abrechnung && l.abrechnung !== "Privat" ? ` · <span class="tag warn">Zahlt: ${esc(l.abrechnung)}</span>` : ""}</dd>
+      <dt>Von</dt><dd>${esc(adr(v)) || "–"}${det(v) ? `<div class="muted">${esc(det(v))}</div>` : ""}</dd>
+      <dt>Nach</dt><dd>${esc(adr(n)) || "–"}${det(n) ? `<div class="muted">${esc(det(n))}</div>` : ""}</dd>
+      ${(l.extras||[]).length ? `<dt>Extras</dt><dd>${l.extras.map(x => `<span class="tag">${esc(x)}</span>`).join(" ")}</dd>` : ""}
+    </dl>
+    ${l.info ? `<details><summary class="muted">Beschreibung vom Kunden</summary><p>${esc(l.info)}</p></details>` : ""}
+    <div class="acts">${tn ? `<a class="btn sm" href="tel:${esc(tn)}">Anrufen</a><a class="btn sm sec" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${l.mail ? `<a class="btn sm sec" href="mailto:${esc(l.mail)}">E-Mail</a>` : ""}${l.mid ? `<a class="btn sm sec" href="https://mail.google.com/mail/?authuser=${ME}#all/${esc(l.mid)}" target="_blank" rel="noopener">Anfrage öffnen</a>` : ""}</div>
+    <textarea class="lnote" data-id="${esc(l.id)}" rows="2" placeholder="Notiz: z. B. KV geschickt, Rückruf Freitag …" aria-label="Notiz zu ${esc(l.name)}">${esc(l.notiz || "")}</textarea>
+    ${last ? `<div class="muted small">Status zuletzt geändert: ${esc(lst(last.s).l)} · ${esc(rel(new Date(last.at).getTime()))}</div>` : ""}
+  </div>`;
+}
+function renderLeads(){
+  const all = lList(), cnt = k => all.filter(l => l.status === k).length, open = all.filter(l => LOPEN.has(l.status));
+  const nNeu = cnt("neu"); $("#leadBadge").textContent = nNeu; $("#leadBadge").hidden = !nNeu;
+
+  // Übersicht (kleine Einsicht)
+  $("#hLeadChips").innerHTML = LST.map(s => `<a class="lchip" href="#leads/${s.k}"><i style="background:${s.c}"></i>${s.l}<b>${cnt(s.k)}</b></a>`).join("");
+  const top = [...open].sort(lSort).slice(0, 5);
+  $("#hLeads").innerHTML = top.length ? top.map(l => `<div class="lrow"><div class="t"><b>${esc(l.name || "Ohne Namen")}${ageTag(l)}</b><span>${l.datum ? "Umzug " + esc(fmtD(l.datum)) : "ohne Datum"}${route2(l) ? " · " + esc(route2(l)) : ""}</span></div>${telNr(l.tel) ? `<a class="btn sm sec" href="tel:${esc(telNr(l.tel))}">Anrufen</a>` : ""}${stSelect(l)}</div>`).join("")
+    + (open.length > 5 ? `<div class="muted" style="padding-top:8px;font-size:12.5px"><a href="#leads">+ ${open.length - 5} weitere offene Leads</a></div>` : "")
+    : `<div class="empty">${all.length ? "Keine offenen Leads – alles bearbeitet ✓" : "Noch keine Leads"}</div>`;
+
+  // Leads-Seite
+  setKpi("LOffen", String(open.length), `${cnt("kontaktiert")} kontaktiert · ${cnt("angebot")} mit Angebot`);
+  setKpi("LNeu", String(nNeu), nNeu ? "bitte zuerst anrufen" : "Alle kontaktiert ✓");
+  $("#kLNeu").className = "v" + (nNeu ? " down" : "");
+  const dec = cnt("gebucht") + cnt("verloren");
+  setKpi("LQuote", dec ? pct(cnt("gebucht") / dec) : "–", `${cnt("gebucht")} abgeschlossen · ${cnt("verloren")} abgesagt`);
+  const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
+  setKpi("LMonat", String(all.filter(l => l.eingang && new Date(l.eingang) >= m0).length), `seit 1. ${MON[m0.getMonth()]} · ${all.length} insgesamt`);
+  const fl = [{ k:"offen", l:"Offen", n:open.length, c:"#2B1740" }, ...LST.map(s => ({ ...s, n:cnt(s.k) })), { k:"alle", l:"Alle", n:all.length, c:"#8a82a0" }];
+  $("#lFilter").innerHTML = fl.map(f => `<button type="button" class="lchip" data-f="${f.k}" aria-pressed="${f.k === lFilter}"><i style="background:${f.c}"></i>${f.l}<b>${f.n}</b></button>`).join("");
+  const q = ($("#lSearch").value || "").trim().toLowerCase();
+  let list = lFilter === "alle" ? all : lFilter === "offen" ? open : all.filter(l => l.status === lFilter);
+  if(q) list = list.filter(l => JSON.stringify([l.name, l.tel, l.mail, l.von, l.nach, l.notiz, l.quelle]).toLowerCase().includes(q));
+  $("#lCards").innerHTML = list.length ? [...list].sort(lSort).map(leadCard).join("") : `<div class="card empty">Keine Leads in dieser Auswahl</div>`;
+}
+function route(){
+  const [v, f] = location.hash.replace(/^#/, "").split("/");
+  const onLeads = v === "leads";
+  if(onLeads && f) lFilter = f;
+  $("#viewHome").hidden = onLeads; $("#viewLeads").hidden = !onLeads;
+  $("#range").style.display = onLeads ? "none" : "";
+  document.querySelectorAll(".tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.v === (onLeads ? "leads" : "home") ? "page" : "false"));
+  try{ renderLeads(); }catch(e){ console.error(e); }
+  if(!onLeads) Object.values(charts).forEach(c => c.resize());
+  window.scrollTo(0, 0);
+}
+
 function renderConnect(){
   const box = $("#connectBox"); const parts = [];
   if(!zcfg.token) parts.push(`<div class="connect"><p><b>Zettel-Daten verbinden.</b> Trag den GitHub-Schlüssel der Zettel-App ein, dann lädt das Cockpit eure Aufträge live.</p><button class="btn" data-act="set">Verbinden</button></div>`);
@@ -592,6 +835,7 @@ function renderAll(){
   try{ renderZettel(); }catch(e){ console.error(e); }
   try{ renderMail(); }catch(e){ console.error(e); }
   try{ renderVivid(); }catch(e){ console.error(e); }
+  try{ renderLeads(); }catch(e){ console.error(e); }
 }
 
 /* ---------- Hilfen ---------- */
@@ -609,24 +853,47 @@ $("#setForm").addEventListener("submit", async e => {
   e.preventDefault();
   zcfg = { ...zcfg, owner:$("#sOwner").value.trim(), repo:$("#sRepo").value.trim(), token:$("#sToken").value.trim() }; ls.set(LS.zcfg, zcfg);
   dcfg = { clientId:$("#sClient").value.trim() }; ls.set(LS.dcfg, dcfg); tokenClient = null;
-  $("#setModal").classList.remove("open"); renderConnect(); await Promise.all([loadZettel(), loadVivid()]); renderAll();
+  $("#setModal").classList.remove("open"); renderConnect(); await Promise.all([loadZettel(), loadVivid(), loadLeads()]); renderAll();
 });
 $("#connectBox").addEventListener("click", e => { const b = e.target.closest("[data-act]"); if(!b) return; if(b.dataset.act === "set") openSet(); else connectGmail(false); });
 $("#pGmail").addEventListener("click", () => gToken ? refresh() : connectGmail(false));
+window.addEventListener("hashchange", route);
+document.addEventListener("change", e => {
+  const s = e.target.closest("select.st");
+  if(s){ const v = s.value, id = s.dataset.id; changeLead(id, l => { if(l.status !== v){ l.status = v; (l.verlauf = l.verlauf || []).push({ s:v, at:new Date().toISOString() }); } }, `Lead: ${lst(v).l}`); return; }
+  const t = e.target.closest("textarea.lnote");
+  if(t){ const v = t.value.trim(), id = t.dataset.id; if(((leads.leads[id]||{}).notiz||"") !== v) changeLead(id, l => { l.notiz = v; }, "Lead: Notiz"); }
+});
+$("#lFilter").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if(!b) return; lFilter = b.dataset.f; history.replaceState(null, "", "#leads/" + lFilter); renderLeads(); });
+$("#lSearch").addEventListener("input", () => renderLeads());
+$("#lAdd").addEventListener("click", () => { $("#leadForm").reset(); $("#leadModal").classList.add("open"); setTimeout(() => $("#lfName").focus(), 50); });
+$("#leadCancel").addEventListener("click", () => $("#leadModal").classList.remove("open"));
+$("#leadModal").addEventListener("click", e => { if(e.target.id === "leadModal") $("#leadModal").classList.remove("open"); });
+$("#leadForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const now = new Date().toISOString(), id = "m-" + Date.now();
+  const l = { id, quelle:$("#lfQuelle").value, eingang:now, name:$("#lfName").value.trim(), tel:$("#lfTel").value.trim(), mail:$("#lfMail").value.trim(),
+    datum:$("#lfDatum").value, von:{ ort:$("#lfVon").value.trim() }, nach:{ ort:$("#lfNach").value.trim() }, km:null, extras:[], info:"",
+    status:"neu", notiz:$("#lfNotiz").value.trim(), verlauf:[{ s:"neu", at:now }] };
+  $("#leadModal").classList.remove("open");
+  leads.leads[id] = l; lFilter = "offen"; renderLeads();
+  try{ await saveLeads(b => { b.leads[id] = l; }, "Lead: " + l.name); toast("Lead gespeichert ✓"); }
+  catch(err){ delete leads.leads[id]; renderLeads(); toast("Nicht gespeichert: " + err.message); }
+});
 $("#pVivid").addEventListener("click", () => zcfg.token ? refresh(true) : openSet());
 $("#pZettel").addEventListener("click", () => zcfg.token ? refresh() : openSet());
 $("#refBtn").addEventListener("click", () => refresh(true));
 $("#range").addEventListener("click", e => { const b = e.target.closest("[data-r]"); if(!b) return; range = +b.dataset.r; document.querySelectorAll("#range button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderAll(); });
-document.addEventListener("keydown", e => { if(e.key === "Escape") $("#setModal").classList.remove("open"); });
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ $("#setModal").classList.remove("open"); $("#leadModal").classList.remove("open"); } });
 
 let busy = false, lastRun = 0;
 async function refresh(manual){
   if(busy) return; busy = true;
   lastRun = Date.now();
-  try{ await Promise.all([loadZettel(), loadMail(), loadVivid()]); renderAll(); if(manual) toast("Aktualisiert"); } finally { busy = false; }
+  try{ await Promise.all([loadZettel(), loadMail(), loadVivid(), loadLeads()]); await importLeads(); renderAll(); if(manual) toast("Aktualisiert"); } finally { busy = false; }
 }
 { const s = ls.get("nd_gt", null); if(s && s.e > Date.now()){ gToken = s.t; gExp = s.e; } }
-renderConnect(); renderAll(); refresh();
+renderConnect(); renderAll(); route(); refresh();
 setInterval(() => { if(document.visibilityState === "visible") refresh(); }, POLL_MS);
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && Date.now() - lastRun >= POLL_MS) refresh(); });
 })();
