@@ -149,6 +149,8 @@ select.lgrund{font:inherit;font-size:12.5px;border:1px solid #d7c4bd;border-radi
 .kbtn[aria-pressed="true"][data-v="done"]{background:#e4f5ed;border-color:#1f8a5b;color:var(--ok)}
 .wer .preis{display:inline-flex;align-items:center;gap:4px;margin-left:auto;font-size:12px;color:var(--ink3)}
 .wer .preis input{width:74px;font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:5px 7px;text-align:right;background:#fff}
+.btn.tel{font-variant-numeric:tabular-nums;white-space:nowrap}
+.btn.tel:before{content:"";display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z'/%3E%3C/svg%3E") center/contain no-repeat}
 .ktags{display:inline-flex;gap:4px;margin-left:6px;flex-wrap:wrap;vertical-align:middle}
 .btn.sm{padding:7px 11px;font-size:12.5px;border-radius:8px;text-decoration:none;display:inline-block}
 .lfilter{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
@@ -810,7 +812,7 @@ function leadCard(l){
     ${l.info ? `<details><summary class="muted">Beschreibung vom Kunden</summary><p>${esc(l.info)}</p></details>` : ""}
     ${grund}
     ${werBox(l)}
-    <div class="acts">${tn ? `<a class="btn sm" href="tel:${esc(tn)}">Anrufen</a><a class="btn sm sec" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${l.mail ? `<a class="btn sm sec" href="mailto:${esc(l.mail)}">E-Mail</a>` : ""}${l.mid ? `<a class="btn sm sec" href="https://mail.google.com/mail/?authuser=${ME}#all/${esc(l.mid)}" target="_blank" rel="noopener">Anfrage öffnen</a>` : ""}</div>
+    <div class="acts">${tn ? `<a class="btn sm tel" href="tel:${esc(tn)}" title="Anrufen">${esc(l.tel)}</a><button type="button" class="btn sm sec kopie" data-t="${esc(l.tel)}">Kopieren</button><a class="btn sm sec" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${l.mail ? `<a class="btn sm sec" href="mailto:${esc(l.mail)}">E-Mail</a>` : ""}${l.mid ? `<a class="btn sm sec" href="https://mail.google.com/mail/?authuser=${ME}#all/${esc(l.mid)}" target="_blank" rel="noopener">Anfrage öffnen</a>` : ""}</div>
     <textarea class="lnote" data-id="${esc(l.id)}" rows="2" placeholder="Notiz: z. B. KV geschickt, Rückruf Freitag …" aria-label="Notiz zu ${esc(l.name)}">${esc(l.notiz || "")}</textarea>
     ${last ? `<div class="muted small">Status zuletzt geändert: ${esc(lst(last.s).l)} · ${esc(rel(new Date(last.at).getTime()))}</div>` : ""}
   </div>`;
@@ -822,7 +824,7 @@ function renderLeads(){
   // Übersicht (kleine Einsicht)
   $("#hLeadChips").innerHTML = LST.map(s => `<a class="lchip" href="#leads/${s.k}"><i style="background:${s.c}"></i>${s.l}<b>${cnt(s.k)}</b></a>`).join("");
   const top = [...open].sort(lSort).slice(0, 5);
-  $("#hLeads").innerHTML = top.length ? top.map(l => `<div class="lrow"><div class="t"><b>${esc(l.name || "Ohne Namen")}${ageTag(l)}<span class="ktags">${kTags(l)}</span></b><span>${l.datum ? "Umzug " + esc(fmtD(l.datum)) : "ohne Datum"}${route2(l) ? " · " + esc(route2(l)) : ""}</span></div>${telNr(l.tel) ? `<a class="btn sm sec" href="tel:${esc(telNr(l.tel))}">Anrufen</a>` : ""}${stSelect(l)}</div>`).join("")
+  $("#hLeads").innerHTML = top.length ? top.map(l => `<div class="lrow"><div class="t"><b>${esc(l.name || "Ohne Namen")}${ageTag(l)}<span class="ktags">${kTags(l)}</span></b><span>${l.datum ? "Umzug " + esc(fmtD(l.datum)) : "ohne Datum"}${route2(l) ? " · " + esc(route2(l)) : ""}</span></div>${telNr(l.tel) ? `<a class="btn sm sec tel" href="tel:${esc(telNr(l.tel))}" title="Anrufen">${esc(l.tel)}</a>` : ""}${stSelect(l)}</div>`).join("")
     + (open.length > 5 ? `<div class="muted" style="padding-top:8px;font-size:12.5px"><a href="#leads">+ ${open.length - 5} weitere offene Leads</a></div>` : "")
     : `<div class="empty">${all.length ? "Keine offenen Leads – alles bearbeitet ✓" : "Noch keine Leads"}</div>`;
 
@@ -899,7 +901,9 @@ document.addEventListener("change", e => {
   const t = e.target.closest("textarea.lnote");
   if(t){ const v = t.value.trim(), id = t.dataset.id; if(((leads.leads[id]||{}).notiz||"") !== v) changeLead(id, l => { l.notiz = v; }, "Lead: Notiz"); }
 });
-document.addEventListener("click", e => {
+document.addEventListener("click", async e => {
+  const cp = e.target.closest(".kopie");
+  if(cp){ try{ await navigator.clipboard.writeText(cp.dataset.t); toast("Nummer kopiert"); }catch(err){ toast(cp.dataset.t); } return; }
   const b = e.target.closest(".kbtn"); if(!b) return;
   const { id, p, v } = b.dataset, now = new Date().toISOString();
   changeLead(id, l => {
