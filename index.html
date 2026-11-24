@@ -474,7 +474,7 @@ async function saveLeads(mut, msg){
   throw new Error("gleichzeitige Änderung – bitte nochmal");
 }
 async function changeLead(id, fn, msg){
-  lSticky.add(id); lFlash = id;
+  lSticky.add(id); lFlash = { id, t:Date.now() };
   const l = leads.leads[id]; if(l){ fn(l); renderLeads(); }
   try{ await saveLeads(b => { if(b.leads[id]) fn(b.leads[id]); }, msg); renderLeads(); toast("Gespeichert ✓"); }
   catch(e){ toast("Nicht gespeichert: " + e.message); await loadLeads(); renderLeads(); }
@@ -917,7 +917,7 @@ function renderLeads(){
   list = list.concat(all.filter(l => lSticky.has(l.id) && !list.includes(l)));
   if(q) list = list.filter(l => JSON.stringify([l.name, l.tel, l.mail, l.von, l.nach, l.notiz, l.quelle]).toLowerCase().includes(q));
   $("#lCards").innerHTML = list.length ? stable(list, "page").map(leadCard).join("") : `<div class="card empty">Keine Leads in dieser Auswahl</div>`;
-  if(lFlash){ document.querySelectorAll(`[data-lid="${lFlash}"]`).forEach(el => { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }); lFlash = null; }
+  if(lFlash && Date.now() - lFlash.t < 1500) document.querySelectorAll(`[data-lid="${lFlash.id}"]`).forEach(el => el.classList.add("flash"));
 }
 function route(){
   resetLV();
