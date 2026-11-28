@@ -137,7 +137,9 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 select.st{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:#fff;color:var(--ink);max-width:180px;cursor:pointer}
 select.st[data-s="neu"]{border-color:#7a5bb5;background:#f3effa}
 select.st[data-s="kontaktiert"]{border-color:#5b7fc7;background:#eef2fb}
+select.st[data-s="bilder"]{border-color:#3e9c9a;background:#e6f4f4}
 select.st[data-s="angebot"]{border-color:#e7a33e;background:#fdf4e4}
+select.st[data-s="nachgefasst"]{border-color:#d9822b;background:#fcebdc}
 select.st[data-s="gebucht"]{border-color:#1f8a5b;background:#e4f5ed}
 select.st[data-s="verloren"]{border-color:#b9b2c9;background:#f4f3f7;color:var(--ink3)}
 select.st[data-s="schmutz"]{border-color:#8d6e63;background:#f3ece9;color:#6d4c41}
@@ -837,7 +839,9 @@ function renderVivid(){
 const LST = [
   { k:"neu", l:"Neu", c:"#7a5bb5" },
   { k:"kontaktiert", l:"Kontaktiert", c:"#5b7fc7" },
-  { k:"angebot", l:"Angebot geschickt", c:"#e7a33e" },
+  { k:"bilder", l:"Bilder da", c:"#3e9c9a" },
+  { k:"angebot", l:"KV raus", c:"#e7a33e" },
+  { k:"nachgefasst", l:"Nachgefasst", c:"#d9822b" },
   { k:"gebucht", l:"Abgeschlossen", c:"#1f8a5b" },
   { k:"verloren", l:"Abgesagt", c:"#b9b2c9" },
   { k:"schmutz", l:"Schmutz", c:"#8d6e63" } ];
@@ -853,10 +857,22 @@ function werBox(l){
 }
 const GRUENDE = ["Nur Preisvergleich","Nicht erreichbar","Falsche Kontaktdaten","Außerhalb Einsatzgebiet","Doppelte Anfrage","Sonstiges"];
 const lst = k => LST.find(s => s.k === k) || LST[0];
-const LOPEN = new Set(["neu","kontaktiert","angebot"]);
-const LORD = { neu:0, kontaktiert:1, angebot:2, gebucht:3, verloren:4, schmutz:5 };
+const LOPEN = new Set(["neu","kontaktiert","bilder","angebot","nachgefasst"]);
+const LORD = { neu:0, kontaktiert:1, bilder:2, angebot:3, nachgefasst:4, gebucht:5, verloren:6, schmutz:7 };
+// Nachfassen: 2 Tage nach dem KV anrufen, 3 Tage später (Tag 5) nochmal – danach entscheiden
+const lastAt = (l, k) => { const v = (l.verlauf||[]).filter(x => x.s === k).pop(); return v ? new Date(v.at).getTime() : 0; };
+function fuInfo(l){
+  const d = t => (Date.now() - t) / 864e5;
+  if(l.status === "angebot"){ const t = lastAt(l, "angebot"); return t && d(t) >= 2 ? { due:true, t:"Nachfassen fällig" } : t ? { due:false, t:"Nachfassen " + (d(t) < 1 ? "übermorgen" : "morgen") } : null; }
+  if(l.status === "nachgefasst"){ const n = (l.verlauf||[]).filter(x => x.s === "nachgefasst").length, t = lastAt(l, "nachgefasst");
+    if(n >= 2) return t && d(t) >= 2 ? { due:true, t:"Entscheiden: zu oder ab?" } : null;
+    return t && d(t) >= 3 ? { due:true, t:"2. Mal nachfassen" } : null; }
+  return null;
+}
+const fuDue = l => { const f = fuInfo(l); return !!(f && f.due); };
+function fuTag(l){ const f = fuInfo(l); return f ? ` <span class="tag ${f.due ? "bad" : ""}">${esc(f.t)}</span>` : ""; }
 const lList = () => Object.values(leads.leads||{}).filter(l => !l.geloescht);
-const lSort = (a, b) => (LORD[a.status] - LORD[b.status]) || (a.datum||"9").localeCompare(b.datum||"9") || (b.eingang||"").localeCompare(a.eingang||"");
+const lSort = (a, b) => (fuDue(b) - fuDue(a)) || (LORD[a.status] - LORD[b.status]) || (a.datum||"9").localeCompare(b.datum||"9") || (b.eingang||"").localeCompare(a.eingang||"");
 const telNr = t => String(t||"").replace(/[^\d+]/g, "");
 const ortK = o => String(o||"").replace(/^\d{5}\s*/, "");
 const route2 = l => [ortK(l.von && l.von.ort), ortK(l.nach && l.nach.ort)].filter(Boolean).join(" → ");
@@ -874,7 +890,7 @@ function leadCard(l){
   const last = (l.verlauf||[]).slice(-1)[0];
   const grund = l.status === "schmutz" ? `<select class="lgrund" data-id="${esc(l.id)}" aria-label="Grund für Schmutz"><option value="">Grund wählen …</option>${GRUENDE.map(g => `<option${g === l.grund ? " selected" : ""}>${g}</option>`).join("")}</select>` : "";
   return `<div class="card lcard${l.status === "schmutz" ? " schmutz" : ""}" data-lid="${esc(l.id)}" style="border-left:4px solid ${s.c}">
-    <div class="hd"><div><b class="nm">${esc(l.name || "Ohne Namen")}</b>${ageTag(l)}<span class="ktags">${kTags(l)}</span><div class="muted">${esc(l.quelle || "")}${l.eingang ? " · Eingang " + esc(fmtD(l.eingang)) : ""}</div></div>${stSelect(l)}</div>
+    <div class="hd"><div><b class="nm">${esc(l.name || "Ohne Namen")}</b>${ageTag(l)}${fuTag(l)}<span class="ktags">${kTags(l)}</span><div class="muted">${esc(l.quelle || "")}${l.eingang ? " · Eingang " + esc(fmtD(l.eingang)) : ""}</div></div>${stSelect(l)}</div>
     <dl>
       <dt>Umzug</dt><dd><b>${l.datum ? esc(fmtD(l.datum)) : "–"}</b>${l.km != null ? " · " + n1(l.km) + " km" : ""}${l.abrechnung && l.abrechnung !== "Privat" ? ` · <span class="tag warn">Zahlt: ${esc(l.abrechnung)}</span>` : ""}</dd>
       <dt>Von</dt><dd>${esc(adr(v)) || "–"}${det(v) ? `<div class="muted">${esc(det(v))}</div>` : ""}</dd>
@@ -884,7 +900,7 @@ function leadCard(l){
     ${l.info ? `<details><summary class="muted">Beschreibung vom Kunden</summary><p>${esc(l.info)}</p></details>` : ""}
     ${grund}
     ${werBox(l)}
-    <div class="acts"><button type="button" class="btn sm red kvbtn" data-id="${esc(l.id)}">KVA erstellen</button>${tn ? `<a class="btn sm tel" href="tel:${esc(tn)}" title="Anrufen">${esc(l.tel)}</a><button type="button" class="btn sm sec kopie" data-t="${esc(l.tel)}">Kopieren</button><a class="btn sm sec" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${l.mail ? `<a class="btn sm sec" href="mailto:${esc(l.mail)}">E-Mail</a>` : ""}${l.mid ? `<a class="btn sm sec" href="https://mail.google.com/mail/?authuser=${ME}#all/${esc(l.mid)}" target="_blank" rel="noopener">Anfrage öffnen</a>` : ""}</div>
+    <div class="acts"><button type="button" class="btn sm red kvbtn" data-id="${esc(l.id)}">KVA erstellen</button>${["angebot","nachgefasst"].includes(l.status) ? `<button type="button" class="btn sm sec fubtn" data-id="${esc(l.id)}">Nachgefasst ✓</button>` : ""}${tn ? `<a class="btn sm tel" href="tel:${esc(tn)}" title="Anrufen">${esc(l.tel)}</a><button type="button" class="btn sm sec kopie" data-t="${esc(l.tel)}">Kopieren</button><a class="btn sm sec" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${l.mail ? `<a class="btn sm sec" href="mailto:${esc(l.mail)}">E-Mail</a>` : ""}${l.mid ? `<a class="btn sm sec" href="https://mail.google.com/mail/?authuser=${ME}#all/${esc(l.mid)}" target="_blank" rel="noopener">Anfrage öffnen</a>` : ""}</div>
     ${kvList(l)}
     <textarea class="lnote" data-id="${esc(l.id)}" rows="2" placeholder="Notiz: z. B. KV geschickt, Rückruf Freitag …" aria-label="Notiz zu ${esc(l.name)}">${esc(l.notiz || "")}</textarea>
     ${last ? `<div class="muted small">Status zuletzt geändert: ${esc(lst(last.s).l)} · ${esc(rel(new Date(last.at).getTime()))}</div>` : ""}
@@ -897,12 +913,13 @@ function renderLeads(){
   // Übersicht (kleine Einsicht)
   $("#hLeadChips").innerHTML = LST.map(s => `<a class="lchip" href="#leads/${s.k}"><i style="background:${s.c}"></i>${s.l}<b>${cnt(s.k)}</b></a>`).join("");
   const top = stable(all.filter(l => LOPEN.has(l.status) || lSticky.has(l.id)), "home").slice(0, 5);
-  $("#hLeads").innerHTML = top.length ? top.map(l => `<div class="lrow" data-lid="${esc(l.id)}"><div class="t"><b>${esc(l.name || "Ohne Namen")}${ageTag(l)}<span class="ktags">${kTags(l)}</span></b><span>${l.datum ? "Umzug " + esc(fmtD(l.datum)) : "ohne Datum"}${route2(l) ? " · " + esc(route2(l)) : ""}</span></div>${telNr(l.tel) ? `<a class="btn sm sec tel" href="tel:${esc(telNr(l.tel))}" title="Anrufen">${esc(l.tel)}</a>` : ""}<button type="button" class="btn sm sec kvbtn" data-id="${esc(l.id)}">KVA</button>${stSelect(l)}</div>`).join("")
+  $("#hLeads").innerHTML = top.length ? top.map(l => `<div class="lrow" data-lid="${esc(l.id)}"><div class="t"><b>${esc(l.name || "Ohne Namen")}${ageTag(l)}${fuTag(l)}<span class="ktags">${kTags(l)}</span></b><span>${l.datum ? "Umzug " + esc(fmtD(l.datum)) : "ohne Datum"}${route2(l) ? " · " + esc(route2(l)) : ""}</span></div>${telNr(l.tel) ? `<a class="btn sm sec tel" href="tel:${esc(telNr(l.tel))}" title="Anrufen">${esc(l.tel)}</a>` : ""}<button type="button" class="btn sm sec kvbtn" data-id="${esc(l.id)}">KVA</button>${stSelect(l)}</div>`).join("")
     + (open.length > 5 ? `<div class="muted" style="padding-top:8px;font-size:12.5px"><a href="#leads">+ ${open.length - 5} weitere offene Leads</a></div>` : "")
     : `<div class="empty">${all.length ? "Keine offenen Leads – alles bearbeitet ✓" : "Noch keine Leads"}</div>`;
 
   // Leads-Seite
-  setKpi("LOffen", String(open.length), `${cnt("kontaktiert")} kontaktiert · ${cnt("angebot")} mit Angebot`);
+  const due = open.filter(fuDue);
+  setKpi("LOffen", String(open.length), `${cnt("angebot") + cnt("nachgefasst")} mit KV${due.length ? " · " + due.length + " nachfassen fällig" : ""}`);
   setKpi("LNeu", String(nNeu), nNeu ? "bitte zuerst anrufen" : "Alle kontaktiert ✓");
   $("#kLNeu").className = "v" + (nNeu ? " down" : "");
   const dec = cnt("gebucht") + cnt("verloren");
@@ -910,10 +927,10 @@ function renderLeads(){
   const m0 = new Date(); m0.setDate(1); m0.setHours(0,0,0,0);
   setKpi("LMonat", String(all.filter(l => l.eingang && new Date(l.eingang) >= m0).length), `seit 1. ${MON[m0.getMonth()]} · ${all.length} insgesamt${cnt("schmutz") ? " · " + cnt("schmutz") + " Schmutz (" + pct(cnt("schmutz") / all.length) + ")" : ""}`);
   const soll = p => all.filter(l => l.kontakt && l.kontakt[p] && l.kontakt[p].s === "soll" && LOPEN.has(l.status));
-  const fl = [{ k:"offen", l:"Offen", n:open.length, c:"#2B1740" }, ...LEUTE.map(p => ({ k:"soll-" + p.k, l:p.l + " soll", n:soll(p.k).length, c:"#e7a33e" })), ...LST.map(s => ({ ...s, n:cnt(s.k) })), { k:"alle", l:"Alle", n:all.length, c:"#8a82a0" }];
+  const fl = [{ k:"offen", l:"Offen", n:open.length, c:"#2B1740" }, { k:"nachfassen", l:"Nachfassen fällig", n:due.length, c:"#c0392b" }, ...LEUTE.map(p => ({ k:"soll-" + p.k, l:p.l + " soll", n:soll(p.k).length, c:"#e7a33e" })), ...LST.map(s => ({ ...s, n:cnt(s.k) })), { k:"alle", l:"Alle", n:all.length, c:"#8a82a0" }];
   $("#lFilter").innerHTML = fl.map(f => `<button type="button" class="lchip" data-f="${f.k}" aria-pressed="${f.k === lFilter}"><i style="background:${f.c}"></i>${f.l}<b>${f.n}</b></button>`).join("");
   const q = ($("#lSearch").value || "").trim().toLowerCase();
-  let list = lFilter === "alle" ? all : lFilter === "offen" ? open : lFilter.startsWith("soll-") ? soll(lFilter.slice(5)) : all.filter(l => l.status === lFilter);
+  let list = lFilter === "alle" ? all : lFilter === "offen" ? open : lFilter === "nachfassen" ? due : lFilter.startsWith("soll-") ? soll(lFilter.slice(5)) : all.filter(l => l.status === lFilter);
   list = list.concat(all.filter(l => lSticky.has(l.id) && !list.includes(l)));
   if(q) list = list.filter(l => JSON.stringify([l.name, l.tel, l.mail, l.von, l.nach, l.notiz, l.quelle]).toLowerCase().includes(q));
   $("#lCards").innerHTML = list.length ? stable(list, "page").map(leadCard).join("") : `<div class="card empty">Keine Leads in dieser Auswahl</div>`;
@@ -1140,7 +1157,7 @@ async function createKV(){
     kvRes = { nr, total:d.total, file, path, blob, url:URL.createObjectURL(blob), name, anrede, datum:d.datum, mail:l.mail };
     await changeLead(l.id, x => {
       x.kd_nr = kd; (x.kvs = x.kvs || []).push({ nr, betrag:d.total, datum:dmy(now), pfad:path });
-      if(["neu", "kontaktiert"].includes(x.status)){ x.status = "angebot"; (x.verlauf = x.verlauf || []).push({ s:"angebot", at:now.toISOString() }); }
+      if(["neu", "kontaktiert", "bilder"].includes(x.status)){ x.status = "angebot"; (x.verlauf = x.verlauf || []).push({ s:"angebot", at:now.toISOString() }); }
       x.notiz = [`${nr} erstellt (${eur0(d.total)})`, x.notiz].filter(Boolean).join(" · ");
     }, `Lead: ${nr} erstellt`);
     showKvDone();
@@ -1225,6 +1242,8 @@ document.addEventListener("click", async e => {
   const kq = e.target.closest(".kvpdf"); if(kq){ openKvPdf(kq.dataset.path); return; }
   const cp = e.target.closest(".kopie");
   if(cp){ try{ await navigator.clipboard.writeText(cp.dataset.t); toast("Nummer kopiert"); }catch(err){ toast(cp.dataset.t); } return; }
+  const fb = e.target.closest(".fubtn");
+  if(fb){ const now = new Date().toISOString(); changeLead(fb.dataset.id, l => { l.status = "nachgefasst"; (l.verlauf = l.verlauf || []).push({ s:"nachgefasst", at:now }); }, "Lead: nachgefasst"); return; }
   const b = e.target.closest(".kbtn"); if(!b) return;
   const { id, p, v } = b.dataset, now = new Date().toISOString();
   changeLead(id, l => {
